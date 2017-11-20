@@ -24,14 +24,28 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += ../sqlite3
 
+
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        qhexwindow.cpp \
+    SQLite3DB.cpp \
+    utils.cpp
 
 HEADERS += \
         mainwindow.h \
+        qhexwindow.h \
+    SQLite3DB.h \
+    utils.h
+
+CONFIG += c++11
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+        qhexwindow.ui \
 
 DESTDIR  = $$PWD/../bin
+
+LIBS = -L$$DESTDIR -lsqlite3
+
+include(QHexEdit/QHexEdit.pri)

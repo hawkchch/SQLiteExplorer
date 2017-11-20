@@ -1,5 +1,10 @@
 
-SUBDIRS   = sqlite3 sqlite3tools SQLiteExplorer
+SUBDIRS += sqlite3
+#SUBDIRS += sqlite3tools
+#SUBDIRS += qtpropertybrowser
+SUBDIRS += SQLiteExplorer
+
+
 CONFIG += ordered
 TEMPLATE  = subdirs
 

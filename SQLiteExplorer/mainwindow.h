@@ -2,6 +2,19 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTreeView>
+#include <QTableView>
+
+#include <QTabWidget>
+
+#include <QHexEdit/qhexedit.h>
+#include <QHexWindow.h>
+#include <QSplitter>
+#include <QAction>
+#include <QStandardItemModel>
+#include <QModelIndex>
+
+#include "SQLite3DB.h"
 
 namespace Ui {
 class MainWindow;
@@ -15,10 +28,40 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    bool OpenDatabase(const QString& dbFilePath);
+    CSQLite3DB* GetCurSQLite3DB()
+    {
+        return m_pCurSQLite3DB;
+    }
 
 private:
     Ui::MainWindow *ui;
+
+private Q_SLOTS:
+    void open();
+    void OnTreeViewClick(const QModelIndex& index);
+
+private:
+
+private:
+    // Menu and Tool
+    QAction* m_pOpenAction;
+
+
+    // QTreeView at left
+    QTreeView* m_pTreeView;
+    QStandardItemModel* m_pTreeViewModel;
+
+    // QTabWidget with two sub widget
+    QTableView* m_pTableView;
+    QHexWindow* m_pHexWindow;
+    QTabWidget* m_pTabWidget;
+
+    // QSplitter
+    QSplitter* m_pSplitter;
+
+    // sqlite3tools
+    QMap<QString, CSQLite3DB*> m_mapSqlite3DBs;
+    CSQLite3DB* m_pCurSQLite3DB;
 };
 
 #endif // MAINWINDOW_H
