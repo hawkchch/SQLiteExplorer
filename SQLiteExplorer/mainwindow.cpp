@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Init QTabWidget
     m_pTabWidget = new QTabWidget(this);
-    //m_pTabWidget->addTab(m_pTableView, "Table");
+    m_pTabWidget->addTab(m_pTableView, "Table");
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
 
     m_pTabWidget->setTabEnabled(1, true);
@@ -66,8 +66,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::open()
 {
-    //QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), ".", tr("Sqlite Files(*.db *.sqlite)"));
-    QString path = "MM.sqlite";
+    QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), ".", tr("Sqlite Files(*.db *.sqlite)"));
+    //QString path = "MM.sqlite";
     if(path.length() > 0)
     {
         CSQLite3DB *pSqlite = new CSQLite3DB(path.toStdString());

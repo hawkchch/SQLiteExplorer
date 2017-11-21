@@ -626,7 +626,7 @@ i64 CSQLite3Page::GetPayloadSize(unsigned char cType, unsigned char* a)
         int ovfl;
         unsigned char *b = &a[nLocal];
         ovfl = ((b[0]*256 + b[1])*256 + b[2])*256 + b[3];
-        n += 4;
+        //n += 4;
     }
 
     return nLocal+n;
