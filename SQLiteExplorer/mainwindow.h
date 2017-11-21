@@ -6,6 +6,7 @@
 #include <QTableView>
 
 #include <QTabWidget>
+#include <QTextEdit>
 
 #include <QHexEdit/qhexedit.h>
 #include <QHexWindow.h>
@@ -52,9 +53,15 @@ private:
     QStandardItemModel* m_pTreeViewModel;
 
     // QTabWidget with two sub widget
+    QTabWidget* m_pTabWidget;
+
     QTableView* m_pTableView;
     QHexWindow* m_pHexWindow;
-    QTabWidget* m_pTabWidget;
+    QWidget*    m_pDatabase;
+    QWidget*    m_pSQL;
+    QWidget*    m_pData;
+    QWidget*    m_pDesign;
+    QTextEdit*  m_pDDL;
 
     // QSplitter
     QSplitter* m_pSplitter;

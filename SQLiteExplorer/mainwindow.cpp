@@ -35,14 +35,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Init QTableView (Tab 0)
     m_pTableView = new QTableView(this);
-
     // Init QHexEditWindow (Tab 1)
     m_pHexWindow = new QHexWindow(this);
+    // Init QTextEdit DLL
+    m_pDDL = new QTextEdit(this);
 
     // Init QTabWidget
     m_pTabWidget = new QTabWidget(this);
     m_pTabWidget->addTab(m_pTableView, "Table");
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
+    m_pTabWidget->addTab(m_pDDL, "DDL");
 
     m_pTabWidget->setTabEnabled(1, true);
 
