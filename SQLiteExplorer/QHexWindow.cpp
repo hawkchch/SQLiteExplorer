@@ -18,6 +18,7 @@ QHexWindow::QHexWindow(QWidget *parent) :
     // Init splitter two sub widget
     m_pHexEdit = new QHexEdit(this);
     m_pHexEdit->setReadOnly(true);
+    connect(m_pHexEdit, SIGNAL(currentAddressChanged(qint64)), this, SLOT(onCurrentAddressChanged(qint64)));
     m_pTableWdiget = new QTableWidget(this);
     m_pSplitter->addWidget(m_pHexEdit);
     m_pSplitter->addWidget(m_pTableWdiget);
@@ -145,4 +146,9 @@ void QHexWindow::onNextBtnClicked()
         int pgno = curText.toInt();
         onPageIdSelect(pgno);
     }
+}
+
+void QHexWindow::onCurrentAddressChanged(qint64 address)
+{
+    qDebug() << address;
 }

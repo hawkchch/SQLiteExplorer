@@ -9,6 +9,7 @@ QHexEdit::QHexEdit(QWidget *parent): QFrame(parent)
 
     connect(this->_hexedit_p, &QHexEditPrivate::verticalScroll, this, &QHexEdit::verticalScroll);
     connect(this->_hexedit_p, &QHexEditPrivate::visibleLinesChanged, this, &QHexEdit::visibleLinesChanged);
+    connect(this->_hexedit_p, &QHexEditPrivate::currentAddressChanged, this, &QHexEdit::currentAddressChanged);
 
     this->_scrollarea->setFocusPolicy(Qt::NoFocus);
     this->_scrollarea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); // Do not show vertical QScrollBar

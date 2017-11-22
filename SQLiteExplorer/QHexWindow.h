@@ -33,6 +33,9 @@ public slots:
     void onPrevBtnClicked();
     void onNextBtnClicked();
 
+    void onCurrentAddressChanged(qint64 address);
+
+
 private:
     Ui::QHexWindow *ui;
 

@@ -27,6 +27,9 @@ class QHexEdit : public QFrame
     signals:
         void verticalScroll(integer_t value);
         void visibleLinesChanged();
+        /*! Contains the address, where the cursor is located. */
+        void currentAddressChanged(qint64 address);
+
 
     private:
         QHexEditPrivate* _hexedit_p;

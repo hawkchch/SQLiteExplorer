@@ -48,6 +48,9 @@ class QHexEditPrivate : public QWidget
     signals:
         void visibleLinesChanged();
         void verticalScroll(int value);
+        /*! Contains the address, where the cursor is located. */
+        void currentAddressChanged(qint64 address);
+
 
     private:
         static const integer_t WHELL_SCROLL_LINES;

@@ -386,6 +386,7 @@ void QHexEditPrivate::mousePressEvent(QMouseEvent* event)
         cursor->setSelectionEnd(offset);
     else
         cursor->setOffset(offset, nibbleidx);
+    emit currentAddressChanged(offset);
 }
 
 void QHexEditPrivate::mouseMoveEvent(QMouseEvent* event)
