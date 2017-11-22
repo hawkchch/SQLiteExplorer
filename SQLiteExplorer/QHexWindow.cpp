@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 #include <QDebug>
+#include <QTimer>
 
 QHexWindow::QHexWindow(QWidget *parent) :
     QWidget(parent),
@@ -10,10 +11,27 @@ QHexWindow::QHexWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // Init Splitter
+    m_pSplitter = new QSplitter(Qt::Vertical);
+    m_pSplitter->setStretchFactor(1, 1);
+
+    // Init splitter two sub widget
     m_pHexEdit = new QHexEdit(this);
+    m_pHexEdit->setReadOnly(true);
+    m_pTableWdiget = new QTableWidget(this);
+    m_pSplitter->addWidget(m_pHexEdit);
+    m_pSplitter->addWidget(m_pTableWdiget);
+
+    // Init splitter two sub widget stretch factor
+    m_pSplitter->setStretchFactor(0, 5);
+    m_pSplitter->setStretchFactor(1, 1);
+
+
+    // Init layout
     ui->widget_2->setLayout(new QHBoxLayout);
     ui->widget_2->layout()->setMargin(0);
-    ui->widget_2->layout()->addWidget(m_pHexEdit);
+    ui->widget_2->layout()->addWidget(m_pSplitter);
+
 
     MainWindow* pMainWindow = qobject_cast<MainWindow*>(parentWidget());
     if (pMainWindow)
@@ -67,8 +85,6 @@ void QHexWindow::onPageIdSelect(int pgno)
     QHexDocument* document = QHexDocument::fromMemory(ba);
     m_pHexEdit->setDocument(document);
 
-
-
     // Bulk metadata management (paints only one time)
     document->beginMetadata();
 
@@ -121,9 +137,6 @@ void QHexWindow::onNextBtnClicked()
 {
     int curIdx = ui->comboBox->currentIndex();
     int count = ui->comboBox->count();
-
-    qDebug() << curIdx << ":" << count;
-
     if(curIdx+1 < count)
     {
         curIdx += 1;
