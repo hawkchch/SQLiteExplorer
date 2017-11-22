@@ -7,6 +7,8 @@
 #include <QMessageBox>
 #include <QModelIndex>
 
+#include <QDebug>
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -39,6 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pHexWindow = new QHexWindow(this);
     // Init QTextEdit DLL
     m_pDDL = new QTextEdit(this);
+    m_pDDL->setReadOnly(true);
 
     // Init QTabWidget
     m_pTabWidget = new QTabWidget(this);
@@ -105,5 +108,21 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         vector<int> pageids;
         pageids = pSqlite->GetAllLeafPageIds(tableName.toStdString());
         m_pHexWindow->SetPageIds(pageids);
+
+        QString sqls;
+        QString sql = QString("SELECT * FROM SQLITE_MASTER WHERE tbl_name='%1'").arg(tableName);
+
+        table_content tb;
+        pSqlite->ExecuteCmd(sql.toStdString(), tb);
+        while(!tb.empty())
+        {
+            cell_content cc = tb.front();
+            tb.pop_front();
+            sqls += QString::fromStdString(cc[4]);
+            sqls += "\n\n\n";
+        }
+
+        m_pDDL->setText(sqls);
+
     }
 }
