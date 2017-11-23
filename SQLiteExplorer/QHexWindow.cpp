@@ -33,7 +33,6 @@ QHexWindow::QHexWindow(QWidget *parent) :
     ui->widget_2->layout()->setMargin(0);
     ui->widget_2->layout()->addWidget(m_pSplitter);
 
-
     MainWindow* pMainWindow = qobject_cast<MainWindow*>(parentWidget());
     if (pMainWindow)
     {
@@ -42,8 +41,10 @@ QHexWindow::QHexWindow(QWidget *parent) :
 
     connect(ui->comboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(onComboxChanged(QString)));
 
-    connect(ui->pushButton, SIGNAL(clicked(bool)), this, SLOT(onPrevBtnClicked()));
-    connect(ui->pushButton_2, SIGNAL(clicked(bool)), this, SLOT(onNextBtnClicked()));
+    connect(ui->pushButtonPrev, SIGNAL(clicked(bool)), this, SLOT(onPrevBtnClicked()));
+    connect(ui->pushButtonNext, SIGNAL(clicked(bool)), this, SLOT(onNextBtnClicked()));
+    connect(ui->pushButtonFirst, SIGNAL(clicked(bool)), this, SLOT(onFirstBtnClicked()));
+    connect(ui->pushButtonLast, SIGNAL(clicked(bool)), this, SLOT(onLastBtnClicked()));
 }
 
 QHexWindow::~QHexWindow()
@@ -51,7 +52,7 @@ QHexWindow::~QHexWindow()
     delete ui;
 }
 
-void QHexWindow::SetPageIds(const vector<int> &pgids)
+void QHexWindow::SetPageNos(const vector<int> &pgnos)
 {
     if (m_pParent)
     {
@@ -64,19 +65,30 @@ void QHexWindow::SetPageIds(const vector<int> &pgids)
 
     ui->comboBox->clear();
     QStringList ids;
-    for(auto it=pgids.begin(); it!=pgids.end(); ++it)
+    for(auto it=pgnos.begin(); it!=pgnos.end(); ++it)
     {
         ids.push_back(QString("%1").arg(*it));
     }
 
     ui->comboBox->addItems(ids);
 
-    if(pgids.size() > 0)
+    if(pgnos.size() > 0)
     {
-        onPageIdSelect(pgids[0]);
+        onPageIdSelect(pgnos[0]);
     }
 }
 
+void QHexWindow::SetTableName(const QString &tableName)
+{
+    m_tableHeaders.clear();
+    m_curTableName = tableName;
+    vector<string> headers;
+    m_pCurSQLite3DB->GetColumnNames(tableName.toStdString(), headers);
+    for(auto it=headers.begin(); it!=headers.end(); ++it)
+    {
+        m_tableHeaders.push_back(QString::fromStdString(*it));
+    }
+}
 
 void QHexWindow::onPageIdSelect(int pgno)
 {
@@ -92,6 +104,7 @@ void QHexWindow::onPageIdSelect(int pgno)
     ContentArea& pageHeaderArea = m_pCurSQLite3DB->m_pSqlite3Page->m_pageHeaderArea;
     ContentArea& cellidxArea = m_pCurSQLite3DB->m_pSqlite3Page->m_cellIndexArea;
     vector<ContentArea> payloadArea = m_pCurSQLite3DB->m_pSqlite3Page->m_payloadArea;  // payload区域
+    m_payloadArea = payloadArea;
     ContentArea& unusedArea = m_pCurSQLite3DB->m_pSqlite3Page->m_unusedArea;            // 未使用区域
 
     document->highlightBackRange(pageHeaderArea.m_startAddr, pageHeaderArea.m_len, QColor(Qt::white));
@@ -148,7 +161,77 @@ void QHexWindow::onNextBtnClicked()
     }
 }
 
+void QHexWindow::onFirstBtnClicked()
+{
+    int count = ui->comboBox->count();
+    if(count > 0)
+    {
+        ui->comboBox->setCurrentIndex(0);
+        QString text = ui->comboBox->currentText();
+        int pgno = text.toInt();
+        onPageIdSelect(pgno);
+    }
+}
+
+void QHexWindow::onLastBtnClicked()
+{
+    int count = ui->comboBox->count();
+    if(count > 0)
+    {
+        ui->comboBox->setCurrentIndex(count - 1);
+        QString text = ui->comboBox->currentText();
+        int pgno = text.toInt();
+        onPageIdSelect(pgno);
+    }
+}
+
 void QHexWindow::onCurrentAddressChanged(qint64 address)
 {
-    qDebug() << address;
+    for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
+    {
+        i64 start = it->m_startAddr;
+        i64 end = start + it->m_len;
+        if(address >= start && address <= end)
+        {
+            int idx = it - m_payloadArea.begin();
+            int pgno = ui->comboBox->currentText().toInt();
+            vector<SQLite3Variant> vars;
+            m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
+
+            m_pTableWdiget->setColumnCount(m_tableHeaders.size());
+            m_pTableWdiget->setHorizontalHeaderLabels(m_tableHeaders);
+            m_pTableWdiget->setRowCount(1);
+
+            for(size_t i=0; i<vars.size(); i++)
+            {
+                SQLite3Variant& var = vars[i];
+                QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
+                QString val;
+                switch (var.type) {
+                case SQLITE_TYPE_INTEGER:
+                    val = QString("%1").arg(var.iVal);
+                    break;
+                case SQLITE_TYPE_FLOAT:
+                    val = QString("%1").arg(var.lfVal);
+                    break;
+                case SQLITE_TYPE_TEXT:
+                    val = QString::fromStdString(var.text);
+                    break;
+                case SQLITE_TYPE_NULL:
+                    val = "(null)";
+                    break;
+                case SQLITE_TYPE_BLOB:
+                    val = "[BLOB]";
+                    break;
+                default:
+                    break;
+                }
+
+                name->setText(val);//设置内容
+                m_pTableWdiget->setItem(0,i,name);//把这个Item加到第一行第二列中
+            }
+
+            break;
+        }
+    }
 }

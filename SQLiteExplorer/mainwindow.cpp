@@ -107,7 +107,8 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         CSQLite3DB* pSqlite = it.value();
         vector<int> pageids;
         pageids = pSqlite->GetAllLeafPageIds(tableName.toStdString());
-        m_pHexWindow->SetPageIds(pageids);
+        m_pHexWindow->SetPageNos(pageids);
+        m_pHexWindow->SetTableName(tableName);
 
         QString sqls;
         QString sql = QString("SELECT * FROM SQLITE_MASTER WHERE tbl_name='%1'").arg(tableName);
