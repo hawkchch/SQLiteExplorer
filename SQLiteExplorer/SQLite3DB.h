@@ -11,7 +11,7 @@ using namespace std;
 typedef deque<string> cell_content;
 typedef deque<cell_content> table_content;
 
-struct TableInfo
+struct TableSchema
 {
     string   type;
     string   name;
@@ -91,6 +91,12 @@ public:
     // 执行sql查询
     void ExecuteCmd(const string& sql, table_content& table);
 
+    // 获取指定表的主键相关信息
+    bool GetTablePrimaryKey(const string& tableName, string& pkFieldName, string& pkType, int& pkIdx);
+
+    // 获取表字段信息
+    bool GetTableInfo(const string& tableName, table_content& tb);
+
 private:
     bool OpenDatabase();
     bool FileOpen();
@@ -145,7 +151,7 @@ private:
     sqlite3*      m_pDb;    /* Database handle that owns pFd */
 
 
-    map<string, TableInfo> m_mapTableInfo;
+    map<string, TableSchema> m_mapTableSchema;
     bool m_bTableInfoHasLoad;
 
 
@@ -222,6 +228,7 @@ public:
 
 class CSQLite3Payload
 {
+    friend class CSQLite3DB;
     friend class CSQLite3Page;
 public:
     CSQLite3Payload(CSQLite3Page* parent);
@@ -243,6 +250,8 @@ public:
     */
     bool DescribeContent();
 
+    i64 GetRowid(){return m_rowid;}
+
 private:
     CSQLite3Page* m_pParent;
     string m_rawContent;
@@ -255,6 +264,7 @@ private:
     // 
     int m_leftChild;
     i64 m_rowid;
+    string m_pk;
     int m_cellHeaderSize; // Contain itself
     
     vector<int> m_typeAndLen;

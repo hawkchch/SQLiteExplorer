@@ -202,6 +202,12 @@ void QHexWindow::onCurrentAddressChanged(qint64 address)
             m_pTableWdiget->setHorizontalHeaderLabels(m_tableHeaders);
             m_pTableWdiget->setRowCount(1);
 
+            string pkFiledName;
+            string pkType;
+            int pkIdx = -1;
+            i64 rowid = m_pCurSQLite3DB->m_pSqlite3Payload->GetRowid();
+            m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
+
             for(size_t i=0; i<vars.size(); i++)
             {
                 SQLite3Variant& var = vars[i];
@@ -227,11 +233,19 @@ void QHexWindow::onCurrentAddressChanged(qint64 address)
                     break;
                 }
 
+                if(pkIdx == i && var.type == SQLITE_TYPE_NULL)
+                {
+                    val = QString("%1").arg(rowid);
+                }
+
                 name->setText(val);//设置内容
                 m_pTableWdiget->setItem(0,i,name);//把这个Item加到第一行第二列中
             }
 
-            break;
+            return;
         }
     }
+
+    m_pTableWdiget->clear();
+    m_pTableWdiget->setColumnCount(0);
 }

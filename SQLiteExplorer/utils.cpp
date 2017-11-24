@@ -369,4 +369,31 @@ string wide_to_utf8(const wchar_t* pText)
     delete []buf;
     return ret;    
 }
+
+
+vector<std::string> StrSplit(const std::string &src, const std::string &split)
+{
+    vector<string> val;
+    string cs = src;
+    int pos = StrPos(cs, 0, split);
+    while(pos >= 0){
+        if(pos > 0){
+            string v;
+            v.insert(v.begin(), cs.begin(), cs.begin()+pos);
+            val.push_back(v);
+        }
+        size_t ps = (size_t)pos+split.size();
+        if(ps >= cs.size()){
+            cs.clear();
+        }else{
+            cs = cs.substr(ps, cs.size()-ps);
+        }
+        pos = StrPos(cs, 0, split);
+    }
+    if(cs.size() > 0){
+        val.push_back(cs);
+    }
+    return val;
+}
+
 #endif

@@ -97,9 +97,9 @@ vector<string> CSQLite3DB::GetAllTableNames()
     vector<string> names;
     LoadSqliteMaster();
 
-    for (map<string, TableInfo>::iterator it=m_mapTableInfo.begin(); it!=m_mapTableInfo.end(); ++it)
+    for (map<string, TableSchema>::iterator it=m_mapTableSchema.begin(); it!=m_mapTableSchema.end(); ++it)
     {
-        const TableInfo& tableInfo = it->second;
+        const TableSchema& tableInfo = it->second;
         if (tableInfo.type == "table")
         {
             names.push_back(tableInfo.name);
@@ -117,8 +117,8 @@ vector<int> CSQLite3DB::GetAllLeafPageIds( const string& tableName )
 
     vector<int> ids;
     string name = StrLower(tableName);
-    map<string, TableInfo>::iterator it = m_mapTableInfo.find(name);
-    if (it != m_mapTableInfo.end())
+    map<string, TableSchema>::iterator it = m_mapTableSchema.find(name);
+    if (it != m_mapTableSchema.end())
     {
         PageUsageBtree(it->second.rootpage, 0, 0, name.c_str());
     }
@@ -184,6 +184,43 @@ void CSQLite3DB::ExecuteCmd( const string& sql, table_content& table )
     }while(SQLITE_SCHEMA == sqlite3_finalize(stmt));
 }
 
+bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, string& pkFieldName, string &pkType, int& pkIdx)
+{
+    bool bGetPkIsOk = false;
+    if(tableName.empty())
+    {
+        return bGetPkIsOk;
+    }
+
+    bGetPkIsOk = true;
+    pkIdx = -1;
+    table_content tb;
+    if(GetTableInfo(tableName, tb))
+    {
+        while(!tb.empty())
+        {
+            cell_content cc = tb.front();
+            tb.pop_front();
+            if(cc[5] == "1") // pk
+            {
+                pkIdx = StrToInt(cc[0].c_str());
+                pkFieldName = cc[1];
+                pkType = cc[2];
+                break;
+            }
+        }
+    }
+
+    return bGetPkIsOk;
+}
+
+bool CSQLite3DB::GetTableInfo(const string &tableName, table_content &tb)
+{
+    string sql = "PRAGMA table_info(" + tableName + ")";
+    ExecuteCmd(sql, tb);
+    return tb.size() > 0;
+}
+
 void CSQLite3DB::LoadSqliteMaster()
 {
     if (!m_bTableInfoHasLoad)
@@ -198,7 +235,7 @@ void CSQLite3DB::LoadSqliteMaster()
             tb.pop_front();
 
             string name = StrLower(cc[1]);
-            TableInfo& tableInfo = m_mapTableInfo[name];
+            TableSchema& tableInfo = m_mapTableSchema[name];
             tableInfo.type = cc[0];
             tableInfo.name = cc[1];
             tableInfo.tbl_name = cc[2];
@@ -460,26 +497,29 @@ bool CSQLite3DB::DecodeCell(int pgno, int idx, vector<SQLite3Variant>& var)
 
 bool CSQLite3DB::GetColumnNames(const string& tableName, vector<string>& colNames)
 {
-    string sql = "PRAGMA table_info(" + tableName + ")";
+    bool bGetColNamesIsOk = false;
+    if(tableName.empty())
+    {
+        return bGetColNamesIsOk;
+    }
+
     table_content tb;
-    ExecuteCmd(sql, tb);
-    if (tb.size() == 0)
+    if(GetTableInfo(tableName, tb))
     {
-        return false;
-    }
-
-    while(!tb.empty())
-    {
-        cell_content cc = tb.front();
-        tb.pop_front();
-
-        if (cc.size() > 0)
+        while(!tb.empty())
         {
-            colNames.push_back(cc[1]);
-        }
-    }
+            cell_content cc = tb.front();
+            tb.pop_front();
 
-    return true;
+            if (cc.size() > 0)
+            {
+                colNames.push_back(cc[1]);
+            }
+        }
+
+        bGetColNamesIsOk = true;
+    }
+    return bGetColNamesIsOk;
 }
 
 
@@ -837,5 +877,6 @@ bool CSQLite3Payload::DescribeContent()
         //nDesc += j;
         m_datas.push_back(var);
     }
+
     return true;
 }

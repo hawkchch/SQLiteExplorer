@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include <string>
+#include <vector>
 
 using std::string;
 using std::wstring;
+using std::vector;
 
 typedef unsigned char uint8_t;
 typedef signed char int8_t;
@@ -22,6 +24,10 @@ int64_t StrToInt64(const char* str);
 
 string StrUpper(const string& text);
 string StrLower(const string& text);
+
+
+vector<string> StrSplit( const string& src, const string& split );
+
 
 	/*!
     将UTF8字符串转换成本地字符串
