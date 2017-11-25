@@ -44,8 +44,7 @@ private:
 struct ContentArea
 {
     int m_startAddr;    // 当前页的相对地址
-    i64 m_len;          // 当前页的长度
-    i64 m_nPayload;     // payload整个长度
+    i64 m_len;          // 长度
 
 public:
     void Clear()

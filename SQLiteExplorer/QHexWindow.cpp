@@ -237,7 +237,7 @@ void QHexWindow::onCurrentAddressChanged(qint64 address)
                     break;
                 }
 
-                if(pkIdx == i && var.type == SQLITE_TYPE_NULL)
+                if(pkIdx == i && var.type == SQLITE_TYPE_NULL && StrUpper(pkType) == "INTEGER")
                 {
                     val = QString("%1").arg(rowid);
                 }
