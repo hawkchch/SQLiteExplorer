@@ -76,6 +76,10 @@ void QHexWindow::SetPageNos(const vector<int> &pgnos)
     {
         onPageIdSelect(pgnos[0]);
     }
+
+    // 清空TableWidget中内容
+    m_pTableWdiget->clear();
+    m_pTableWdiget->setColumnCount(0);
 }
 
 void QHexWindow::SetTableName(const QString &tableName)

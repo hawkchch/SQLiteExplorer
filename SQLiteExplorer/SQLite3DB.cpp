@@ -706,7 +706,7 @@ string CSQLite3Page::LoadCell(int pgno, int idx)
     }
 
     ContentArea& ca = m_payloadArea[idx];
-    string cell = m_pageRawContent.substr(ca.m_startAddr, ca.m_len);
+    string cell = m_pageRawContent.substr(ca.m_startAddr);
     return cell;
 }
 
