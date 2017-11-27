@@ -114,7 +114,8 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         QString sql = QString("SELECT * FROM SQLITE_MASTER WHERE tbl_name='%1'").arg(tableName);
 
         table_content tb;
-        pSqlite->ExecuteCmd(sql.toStdString(), tb);
+        cell_content cc;
+        pSqlite->ExecuteCmd(sql.toStdString(), tb, cc);
         while(!tb.empty())
         {
             cell_content cc = tb.front();

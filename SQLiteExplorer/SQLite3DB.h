@@ -49,7 +49,7 @@ struct ContentArea
 public:
     void Clear()
     {
-        m_startAddr = m_len = m_nPayload = 0;
+        m_startAddr = m_len = 0;
     }
 };
 
@@ -89,7 +89,7 @@ public:
     bool GetColumnNames(const string& tableName, vector<string>& colNames);
 
     // 执行sql查询
-    void ExecuteCmd(const string& sql, table_content& table);
+    void ExecuteCmd(const string& sql, table_content& table, cell_content& headers);
 
     // 获取指定表的主键相关信息
     bool GetTablePrimaryKey(const string& tableName, string& pkFieldName, string& pkType, int& pkIdx);

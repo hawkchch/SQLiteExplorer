@@ -151,7 +151,7 @@ int CSQLite3DB::GetPageSize()
     return m_pagesize;
 }
 
-void CSQLite3DB::ExecuteCmd( const string& sql, table_content& table )
+void CSQLite3DB::ExecuteCmd(const string& sql, table_content& table , cell_content &headers)
 {
     sqlite3_stmt* stmt = NULL;
     do{
@@ -180,6 +180,14 @@ void CSQLite3DB::ExecuteCmd( const string& sql, table_content& table )
                 content.push_back(item);
             }
             table.push_back(content);
+
+            if(headers.empty())
+            {
+                for(int i = 0, iend = sqlite3_column_count(stmt); i < iend; ++i)
+                {
+                    headers.push_back(sqlite3_column_name(stmt, i));
+                }
+            }
         }
     }while(SQLITE_SCHEMA == sqlite3_finalize(stmt));
 }
@@ -217,7 +225,8 @@ bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, string& pkFieldName
 bool CSQLite3DB::GetTableInfo(const string &tableName, table_content &tb)
 {
     string sql = "PRAGMA table_info(" + tableName + ")";
-    ExecuteCmd(sql, tb);
+    cell_content cc;
+    ExecuteCmd(sql, tb, cc);
     return tb.size() > 0;
 }
 
@@ -227,7 +236,8 @@ void CSQLite3DB::LoadSqliteMaster()
     {
         string sql = "SELECT * FROM SQLITE_MASTER";
         table_content tb;
-        ExecuteCmd(sql, tb);
+        cell_content header;
+        ExecuteCmd(sql, tb, header);
 
         while(!tb.empty())
         {
