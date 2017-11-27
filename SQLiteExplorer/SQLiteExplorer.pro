@@ -32,6 +32,7 @@ SOURCES += \
     SQLite3DB.cpp \
     utils.cpp \
     qsqlitetableview.cpp \
+    qsqlitequerywindow.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -39,12 +40,14 @@ HEADERS += \
     SQLite3DB.h \
     utils.h \
     qsqlitetableview.h \
+    qsqlitequerywindow.h
 
 CONFIG += c++11
 
 FORMS += \
         mainwindow.ui \
         qhexwindow.ui \
+    qsqlitequerywindow.ui
 
 DESTDIR  = $$PWD/../bin
 

@@ -22,6 +22,7 @@ class MainWindow;
 }
 
 class QSQLiteTableView;
+class QSQLiteQueryWindow;
 
 class MainWindow : public QMainWindow
 {
@@ -60,12 +61,12 @@ private:
     // QTabWidget with two sub widget
     QTabWidget* m_pTabWidget;
 
-    QHexWindow* m_pHexWindow;
-    QWidget*    m_pDatabase;
-    QWidget*    m_pSQL;
-    QSQLiteTableView* m_pData;
-    QWidget*    m_pDesign;
-    QTextEdit*  m_pDDL;
+    QHexWindow*         m_pHexWindow;
+    QWidget*            m_pDatabase;
+    QSQLiteQueryWindow* m_pSQL;
+    QSQLiteTableView*   m_pData;
+    QWidget*            m_pDesign;
+    QTextEdit*          m_pDDL;
 
     // QSplitter
     QSplitter* m_pSplitter;

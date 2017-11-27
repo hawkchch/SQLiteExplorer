@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QModelIndex>
 #include "qsqlitetableview.h"
+#include "qsqlitequerywindow.h"
 
 #include <QDebug>
 
@@ -36,10 +37,14 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers); // 设置不可编辑
     connect(m_pTreeView,SIGNAL(clicked(const QModelIndex)),this, SLOT(OnTreeViewClick(const QModelIndex)));
 
-    // Init QTableView (Tab 0)
+    // Init Data window (Tab 0)
     m_pData = new QSQLiteTableView(this);
     connect(this, SIGNAL(signalSQLiteQuery(QString)), m_pData, SLOT(onSQLiteQueryReceived(QString)));
-    // Init QHexEditWindow (Tab 1)
+
+    // Init SQL Window (Tab 1)
+    m_pSQL = new QSQLiteQueryWindow(this);
+
+    // Init QHexEditWindow
     m_pHexWindow = new QHexWindow(this);
     // Init QTextEdit DLL
     m_pDDL = new QTextEdit(this);
@@ -48,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Init QTabWidget
     m_pTabWidget = new QTabWidget(this);
     m_pTabWidget->addTab(m_pData, "Data");
+    m_pTabWidget->addTab(m_pSQL, "SQL");
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
     m_pTabWidget->addTab(m_pDDL, "DDL");
 
@@ -57,10 +63,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pSplitter = new QSplitter(Qt::Horizontal);
     m_pSplitter->addWidget(m_pTreeView);
     m_pSplitter->addWidget(m_pTabWidget);
-    m_pSplitter->setStretchFactor(1, 1);
+    m_pSplitter->setStretchFactor(0, 2);
+    m_pSplitter->setStretchFactor(1, 6);
 
     // Init CentralWidget
-    //ui->centralWidget->setLayout(new QHBoxLayout());
     ui->centralWidget->layout()->addWidget(m_pSplitter);
 
     open();
