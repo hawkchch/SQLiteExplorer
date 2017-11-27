@@ -21,6 +21,8 @@ namespace Ui {
 class MainWindow;
 }
 
+class QSQLiteTableView;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -36,6 +38,9 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+signals:
+    void signalSQLiteQuery(const QString& sql);
 
 private Q_SLOTS:
     void open();
@@ -55,11 +60,10 @@ private:
     // QTabWidget with two sub widget
     QTabWidget* m_pTabWidget;
 
-    QTableView* m_pTableView;
     QHexWindow* m_pHexWindow;
     QWidget*    m_pDatabase;
     QWidget*    m_pSQL;
-    QWidget*    m_pData;
+    QSQLiteTableView* m_pData;
     QWidget*    m_pDesign;
     QTextEdit*  m_pDDL;
 

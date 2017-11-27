@@ -30,13 +30,15 @@ SOURCES += \
         mainwindow.cpp \
         qhexwindow.cpp \
     SQLite3DB.cpp \
-    utils.cpp
+    utils.cpp \
+    qsqlitetableview.cpp \
 
 HEADERS += \
         mainwindow.h \
         qhexwindow.h \
     SQLite3DB.h \
-    utils.h
+    utils.h \
+    qsqlitetableview.h \
 
 CONFIG += c++11
 

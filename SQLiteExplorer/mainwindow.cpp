@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QModelIndex>
+#include "qsqlitetableview.h"
 
 #include <QDebug>
 
@@ -36,7 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_pTreeView,SIGNAL(clicked(const QModelIndex)),this, SLOT(OnTreeViewClick(const QModelIndex)));
 
     // Init QTableView (Tab 0)
-    m_pTableView = new QTableView(this);
+    m_pData = new QSQLiteTableView(this);
+    connect(this, SIGNAL(signalSQLiteQuery(QString)), m_pData, SLOT(onSQLiteQueryReceived(QString)));
     // Init QHexEditWindow (Tab 1)
     m_pHexWindow = new QHexWindow(this);
     // Init QTextEdit DLL
@@ -45,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Init QTabWidget
     m_pTabWidget = new QTabWidget(this);
-    m_pTabWidget->addTab(m_pTableView, "Table");
+    m_pTabWidget->addTab(m_pData, "Data");
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
     m_pTabWidget->addTab(m_pDDL, "DDL");
 
@@ -126,5 +128,8 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
         m_pDDL->setText(sqls);
 
+
+        QString getAllData = "SELECT * FROM " + tableName;
+        emit signalSQLiteQuery(getAllData);
     }
 }
