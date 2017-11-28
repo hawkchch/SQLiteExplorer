@@ -53,6 +53,17 @@ public:
     }
 };
 
+struct PageUsageInfo
+{
+    int pgno;
+    int parent;
+    int type;
+    string desc;
+
+    PageUsageInfo():pgno(0), parent(0), type(0){}
+};
+
+
 class CSQLite3Page;
 class CSQLite3Payload;
 
@@ -97,6 +108,8 @@ public:
     // 获取表字段信息
     bool GetTableInfo(const string& tableName, table_content& tb);
 
+    vector<PageUsageInfo> GetPageUsageInfos(const string& tableName);
+
 private:
     bool OpenDatabase();
     bool FileOpen();
@@ -130,15 +143,6 @@ private:
     ** the page size.
     */
     i64 LocalPayload(i64 nPayload, char cType);
-
-private:
-    struct PageUsageInfo
-    {
-        int pgno;
-        int parent;
-        int type;
-        string desc;
-    };
 
 private:
     string m_path;

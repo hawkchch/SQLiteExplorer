@@ -14,6 +14,7 @@
 #include <QAction>
 #include <QStandardItemModel>
 #include <QModelIndex>
+#include <QLabel>
 
 #include "SQLite3DB.h"
 
@@ -46,6 +47,7 @@ signals:
 private Q_SLOTS:
     void open();
     void OnTreeViewClick(const QModelIndex& index);
+    void onProcessFinished(int ret);
 
 private:
 
@@ -58,7 +60,7 @@ private:
     QTreeView* m_pTreeView;
     QStandardItemModel* m_pTreeViewModel;
 
-    // QTabWidget with two sub widget
+    // QTabWidget with sub widget
     QTabWidget* m_pTabWidget;
 
     QHexWindow*         m_pHexWindow;
@@ -67,6 +69,7 @@ private:
     QSQLiteTableView*   m_pData;
     QWidget*            m_pDesign;
     QTextEdit*          m_pDDL;
+    QLabel*             m_pGraph;
 
     // QSplitter
     QSplitter* m_pSplitter;

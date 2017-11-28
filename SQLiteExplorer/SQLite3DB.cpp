@@ -230,6 +230,11 @@ bool CSQLite3DB::GetTableInfo(const string &tableName, table_content &tb)
     return tb.size() > 0;
 }
 
+vector<PageUsageInfo> CSQLite3DB::GetPageUsageInfos(const string &tableName)
+{
+    return m_pageUsageInfo;
+}
+
 void CSQLite3DB::LoadSqliteMaster()
 {
     if (!m_bTableInfoHasLoad)

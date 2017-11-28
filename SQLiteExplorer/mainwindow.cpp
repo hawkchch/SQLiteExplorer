@@ -10,6 +10,7 @@
 #include "qsqlitequerywindow.h"
 
 #include <QDebug>
+#include <QProcess>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -50,14 +51,20 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pDDL = new QTextEdit(this);
     m_pDDL->setReadOnly(true);
 
+    m_pGraph = new QLabel(this);
+    QScrollArea* sc = new QScrollArea(this);
+    sc->setWidgetResizable(true);
+    sc->setWidget(m_pGraph);
+
+
+
     // Init QTabWidget
     m_pTabWidget = new QTabWidget(this);
     m_pTabWidget->addTab(m_pData, "Data");
     m_pTabWidget->addTab(m_pSQL, "SQL");
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
     m_pTabWidget->addTab(m_pDDL, "DDL");
-
-    m_pTabWidget->setTabEnabled(1, true);
+    m_pTabWidget->addTab(sc, "Graph");
 
     // Init Splitter
     m_pSplitter = new QSplitter(Qt::Horizontal);
@@ -80,7 +87,6 @@ MainWindow::~MainWindow()
 void MainWindow::open()
 {
     QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), ".", tr("Sqlite Files(*.db *.sqlite)"));
-    //QString path = "MM.sqlite";
     if(path.length() > 0)
     {
         CSQLite3DB *pSqlite = new CSQLite3DB(path.toStdString());
@@ -113,6 +119,7 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
     if (it != m_mapSqlite3DBs.end())
     {
         CSQLite3DB* pSqlite = it.value();
+        m_pCurSQLite3DB = pSqlite;
         vector<int> pageids;
         pageids = pSqlite->GetAllLeafPageIds(tableName.toStdString());
         m_pHexWindow->SetPageNos(pageids);
@@ -137,5 +144,51 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
         QString getAllData = "SELECT * FROM " + tableName;
         emit signalSQLiteQuery(getAllData);
+
+        vector<PageUsageInfo> infos = m_pCurSQLite3DB->GetPageUsageInfos("");
+        QString content = "digraph g { node [shape = record,style=\"filled\"];rankdir=LR;";
+
+        for(auto it=infos.begin(); it!=infos.end(); ++it)
+        {
+            PageUsageInfo& info = *it;
+            content.push_back(QString("%1[color=\"green\"];").arg(info.pgno));
+        }
+
+        for(auto it=infos.begin(); it!=infos.end(); ++it)
+        {
+            PageUsageInfo& info = *it;
+            if(info.parent != 0)
+            {
+                content.push_back(QString("%1 -> %2;").arg(info.parent).arg(info.pgno));
+            }
+        }
+
+        content.push_back("}");
+
+        qDebug() << content;
+        QFile f("tmp.dot");
+        if(!f.open(QIODevice::ReadWrite | QIODevice::Text|QIODevice::Truncate)) {
+            qDebug() << "Can't open the file!";
+        }
+
+        f.write(content.toStdString().c_str());
+        f.close();
+
+        QString program = "dot -Tjpg tmp.dot -o tmp.jpg";
+        //QStringList arguments;
+        //arguments << "-Tjpg" << "tmp.dot" << "-o" << "tmp.jpg";
+        QProcess *myProcess = new QProcess(this);
+        connect(myProcess, SIGNAL(finished(int)), this, SLOT(onProcessFinished(int)));
+        myProcess->start(program);
+        //qDebug() << program << arguments;
     }
+}
+
+void MainWindow::onProcessFinished(int ret)
+{
+    QString path = QString("tmp.jpg");
+    QPixmap px;
+    px.load(path);
+    m_pGraph->setPixmap(px);
+
 }
