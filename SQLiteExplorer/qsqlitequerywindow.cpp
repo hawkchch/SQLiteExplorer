@@ -18,6 +18,7 @@ QSQLiteQueryWindow::QSQLiteQueryWindow(QWidget *parent) :
     connect(this, SIGNAL(signalSQLiteQuery(QString)), m_pTableView, SLOT(onSQLiteQueryReceived(QString)));
 
     connect(ui->pushButton, SIGNAL(clicked(bool)), this, SLOT(onExecuteBtnClicked()));
+    connect(ui->pushButton_2, SIGNAL(clicked(bool)), this, SLOT(onExplainBtnClicked()));
 
     // Init Splitter
     m_pSplitter = new QSplitter(Qt::Vertical);
@@ -39,6 +40,28 @@ QSQLiteQueryWindow::~QSQLiteQueryWindow()
 
 void QSQLiteQueryWindow::onExecuteBtnClicked()
 {
-    QString sql = ui->textEdit->toPlainText();
+    QTextCursor cursor = ui->textEdit->textCursor();
+    QString sql = cursor.selectedText();
+    if (sql.size() == 0)
+    {
+        sql = ui->textEdit->toPlainText();
+    }
+    emit signalSQLiteQuery(sql);
+}
+
+void QSQLiteQueryWindow::onExplainBtnClicked()
+{
+    QTextCursor cursor = ui->textEdit->textCursor();
+    QString sql = cursor.selectedText();
+    if (sql.size() == 0)
+    {
+        sql = ui->textEdit->toPlainText();
+    }
+
+    if (sql.size())
+    {
+        sql = "EXPLAIN " + sql;
+    }
+
     emit signalSQLiteQuery(sql);
 }

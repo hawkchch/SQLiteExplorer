@@ -23,6 +23,7 @@ signals:
 
 private slots:
     void onExecuteBtnClicked();
+    void onExplainBtnClicked();
 
 private:
     Ui::QSQLiteQueryWindow *ui;
