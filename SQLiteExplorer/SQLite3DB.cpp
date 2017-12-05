@@ -402,10 +402,10 @@ void CSQLite3DB::PageUsageBtree( int pgno, /* Page to describe */
         sprintf(zDesc, "%d root %s [%s]", pgno, zType, zName);
     }
     info.desc = zDesc;
-    m_pageUsageInfo.push_back(info);
-
     nCell = a[hdr+3]*256 + a[hdr+4];
     info.ncell = nCell;
+    m_pageUsageInfo.push_back(info);
+
     if( a[hdr]==2 || a[hdr]==5 ){
         int cellstart = hdr+12;
         unsigned int child;

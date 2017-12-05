@@ -158,13 +158,19 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
                                   .arg(info.overflow_page_idx)
                                   .arg(info.overflow_cell_idx));
             }
-            else if (info.parent == 0)
-            {
-                content.push_back(QString("%1[color=\"red\"];").arg(info.pgno));
-            }
             else
             {
-                content.push_back(QString("%1[color=\"green\"];").arg(info.pgno));
+                if (info.ncell > 0)
+                {
+                    int ncell = info.ncell;
+                    if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
+                        ncell += 1;
+                    content.push_back(QString("%1[color=\"green\", label=\"%1 ncell %2\"];").arg(info.pgno).arg(ncell));
+                }
+                else
+                {
+                    content.push_back(QString("%1[color=\"green\", label=\"%1\"];").arg(info.pgno));
+                }
             }
 
         }
