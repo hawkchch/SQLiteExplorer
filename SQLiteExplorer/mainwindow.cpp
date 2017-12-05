@@ -36,6 +36,11 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTreeView->setModel(m_pTreeViewModel);
     m_pTreeView->setHeaderHidden(true); // 隐藏表头
     m_pTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers); // 设置不可编辑
+
+    m_pTreeView->setAlternatingRowColors(true);
+    m_pTreeView->setStyleSheet("QTableView{background-color: rgb(250, 250, 115);"
+        "alternate-background-color: rgb(141, 163, 215);}");
+
     connect(m_pTreeView,SIGNAL(clicked(const QModelIndex)),this, SLOT(OnTreeViewClick(const QModelIndex)));
 
     // Init Data window (Tab 0)
@@ -94,7 +99,8 @@ void MainWindow::open()
         m_pCurSQLite3DB = pSqlite;
 
         QFileInfo fi(path);
-        QStandardItem* root = new QStandardItem(fi.baseName());
+
+        QStandardItem* root = new QStandardItem(QIcon(":/tableview/ui/db.png"), fi.baseName());
         root->setData(path, Qt::UserRole+1);
 
         m_pTreeViewModel->appendRow(root);
@@ -102,7 +108,7 @@ void MainWindow::open()
         vector<string> vs = pSqlite->GetAllTableNames();
         for(auto it=vs.begin(); it!=vs.end(); ++it)
         {
-            QStandardItem* item = new QStandardItem(QString::fromStdString(*it));
+            QStandardItem* item = new QStandardItem(QIcon(":/tableview/ui/table.png"), QString::fromStdString(*it));
             root->appendRow(item);
         }
 

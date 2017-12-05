@@ -54,3 +54,6 @@ DESTDIR  = $$PWD/../bin
 LIBS = -L$$DESTDIR -lsqlite3
 
 include(QHexEdit/QHexEdit.pri)
+
+RESOURCES += \
+    ui_icon.qrc

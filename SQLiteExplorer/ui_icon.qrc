@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/tableview">
+        <file>ui/db.png</file>
+        <file>ui/table.png</file>
+    </qresource>
+    <qresource prefix="/toolicon">
+        <file>ui/find.png</file>
+        <file>ui/info.png</file>
+        <file>ui/new.png</file>
+        <file>ui/question.png</file>
+        <file>ui/setting.png</file>
+    </qresource>
+</RCC>

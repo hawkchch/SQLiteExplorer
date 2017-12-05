@@ -15,6 +15,7 @@
 #include <QStandardItemModel>
 #include <QModelIndex>
 #include <QLabel>
+#include <QColumnView>
 
 #include "SQLite3DB.h"
 
