@@ -29,9 +29,9 @@
      <widget class="QWidget" name="widget" native="true">
       <property name="geometry">
        <rect>
-        <x>100</x>
-        <y>200</y>
-        <width>186</width>
+        <x>20</x>
+        <y>210</y>
+        <width>271</width>
         <height>35</height>
        </rect>
       </property>
@@ -53,6 +53,13 @@
         <widget class="QPushButton" name="pushButton">
          <property name="text">
           <string>Execute</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_2">
+         <property name="text">
+          <string>Explain</string>
          </property>
         </widget>
        </item>
