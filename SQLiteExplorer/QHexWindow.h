@@ -38,6 +38,9 @@ public slots:
 
     void onCurrentAddressChanged(qint64 address);
 
+private:
+    void setPushBtnStats();
+
 
 private:
     Ui::QHexWindow *ui;

@@ -71,11 +71,7 @@ void QHexWindow::SetPageNos(const vector<int> &pgnos)
     }
 
     ui->comboBox->addItems(ids);
-
-    if(pgnos.size() > 0)
-    {
-        onPageIdSelect(pgnos[0]);
-    }
+    ui->comboBox->setCurrentIndex(0);
 
     // 清空TableWidget中内容
     m_pTableWdiget->clear();
@@ -130,12 +126,17 @@ void QHexWindow::onPageIdSelect(int pgno)
         document->highlightBackRange(ca.m_startAddr, ca.m_len, p[i%3]);
     }
     document->endMetadata();
+
+    setPushBtnStats();
 }
 
 void QHexWindow::onComboxChanged(const QString &item)
 {
     int pgno = item.toInt();
-    onPageIdSelect(pgno);
+    if(pgno > 0)
+    {
+        onPageIdSelect(pgno);
+    }
 }
 
 void QHexWindow::onPrevBtnClicked()
@@ -145,9 +146,6 @@ void QHexWindow::onPrevBtnClicked()
     {
         curIdx -= 1;
         ui->comboBox->setCurrentIndex(curIdx);
-        QString curText = ui->comboBox->currentText();
-        int pgno = curText.toInt();
-        onPageIdSelect(pgno);
     }
 }
 
@@ -159,9 +157,6 @@ void QHexWindow::onNextBtnClicked()
     {
         curIdx += 1;
         ui->comboBox->setCurrentIndex(curIdx);
-        QString curText = ui->comboBox->currentText();
-        int pgno = curText.toInt();
-        onPageIdSelect(pgno);
     }
 }
 
@@ -171,9 +166,6 @@ void QHexWindow::onFirstBtnClicked()
     if(count > 0)
     {
         ui->comboBox->setCurrentIndex(0);
-        QString text = ui->comboBox->currentText();
-        int pgno = text.toInt();
-        onPageIdSelect(pgno);
     }
 }
 
@@ -183,9 +175,6 @@ void QHexWindow::onLastBtnClicked()
     if(count > 0)
     {
         ui->comboBox->setCurrentIndex(count - 1);
-        QString text = ui->comboBox->currentText();
-        int pgno = text.toInt();
-        onPageIdSelect(pgno);
     }
 }
 
@@ -252,4 +241,32 @@ void QHexWindow::onCurrentAddressChanged(qint64 address)
 
     m_pTableWdiget->clear();
     m_pTableWdiget->setColumnCount(0);
+}
+
+void QHexWindow::setPushBtnStats()
+{
+    int curIdx = ui->comboBox->currentIndex();
+    int count = ui->comboBox->count();
+
+    if(curIdx == 0)
+    {
+        ui->pushButtonFirst->setEnabled(false);
+        ui->pushButtonPrev->setEnabled(false);
+        ui->pushButtonNext->setEnabled(true);
+        ui->pushButtonLast->setEnabled(true);
+    }
+    else if(curIdx+1 == count)
+    {
+        ui->pushButtonFirst->setEnabled(true);
+        ui->pushButtonPrev->setEnabled(true);
+        ui->pushButtonNext->setEnabled(false);
+        ui->pushButtonLast->setEnabled(false);
+    }
+    else
+    {
+        ui->pushButtonFirst->setEnabled(true);
+        ui->pushButtonPrev->setEnabled(true);
+        ui->pushButtonNext->setEnabled(true);
+        ui->pushButtonLast->setEnabled(true);
+    }
 }
