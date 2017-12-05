@@ -151,7 +151,22 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         for(auto it=infos.begin(); it!=infos.end(); ++it)
         {
             PageUsageInfo& info = *it;
-            content.push_back(QString("%1[color=\"green\"];").arg(info.pgno));
+            if(info.type == PAGE_TYPE_OVERFLOW)
+            {
+                content.push_back(QString("%1[color=\"yellow\", label=\"%1 overflow %2 from cell %3\"];")
+                                  .arg(info.pgno)
+                                  .arg(info.overflow_page_idx)
+                                  .arg(info.overflow_cell_idx));
+            }
+            else if (info.parent == 0)
+            {
+                content.push_back(QString("%1[color=\"red\"];").arg(info.pgno));
+            }
+            else
+            {
+                content.push_back(QString("%1[color=\"green\"];").arg(info.pgno));
+            }
+
         }
 
         for(auto it=infos.begin(); it!=infos.end(); ++it)
@@ -160,12 +175,18 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
             if(info.parent != 0)
             {
                 content.push_back(QString("%1 -> %2;").arg(info.parent).arg(info.pgno));
+                /*
+                qDebug() << "type:" << info.type
+                         << " parent:" << info.parent
+                         << " pgno:" << info.pgno
+                         << " desc:" << info.desc.c_str();
+                */
             }
         }
 
         content.push_back("}");
 
-        qDebug() << content;
+        //qDebug() << content;
         QFile f("tmp.dot");
         if(!f.open(QIODevice::ReadWrite | QIODevice::Text|QIODevice::Truncate)) {
             qDebug() << "Can't open the file!";
@@ -174,13 +195,12 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         f.write(content.toStdString().c_str());
         f.close();
 
-        QString program = "dot -Tjpg tmp.dot -o tmp.jpg";
-        //QStringList arguments;
-        //arguments << "-Tjpg" << "tmp.dot" << "-o" << "tmp.jpg";
+        QString program = "dot";
+        QStringList arguments;
+        arguments << "-Tjpg" << "tmp.dot" << "-o" << "tmp.jpg";
         QProcess *myProcess = new QProcess(this);
         connect(myProcess, SIGNAL(finished(int)), this, SLOT(onProcessFinished(int)));
-        myProcess->start(program);
-        //qDebug() << program << arguments;
+        myProcess->start(program, arguments);
     }
 }
 

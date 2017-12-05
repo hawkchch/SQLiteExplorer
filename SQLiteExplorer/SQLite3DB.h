@@ -53,14 +53,38 @@ public:
     }
 };
 
+enum PageType
+{
+    PAGE_TYPE_UNKNOWN        = 0x00,
+    PAGE_TYPE_INDEX_INTERIOR = 0x02,    // B-Tree Interior
+    PAGE_TYPE_TABLE_INTERIOR = 0x05,    // B+Tree Interior
+    PAGE_TYPE_INDEX_LEAF     = 0x0A,    // B-Tree Leaf
+    PAGE_TYPE_TABLE_LEAF     = 0x0D,    // B+Tree Leaf
+    PAGE_TYPE_OVERFLOW,         // 溢出页
+    PAGE_TYPE_FREELIST_TRUNK,   // 自由页Trunk
+    PAGE_TYPE_FREELIST_LEAF,    // 自由页叶子页
+    PAGE_TYPE_PTR_MAP,          // auto_vacuum=incremental, page_2...
+};
+
 struct PageUsageInfo
 {
-    int pgno;
-    int parent;
-    int type;
+    int pgno;       // 当前页页号
+    int parent;     // 父页页号
+    PageType type;  // 当前页类型
+    int ncell;      // 当前页cell数量
+
+    int overflow_page_idx;
+    int overflow_cell_idx;
     string desc;
 
-    PageUsageInfo():pgno(0), parent(0), type(0){}
+    PageUsageInfo()
+        : pgno(0), parent(0), type(PAGE_TYPE_UNKNOWN), ncell(0)
+        , overflow_page_idx(0), overflow_cell_idx(0)
+    {}
+
+    bool isRootPage(){
+
+    }
 };
 
 

@@ -377,13 +377,20 @@ void CSQLite3DB::PageUsageBtree( int pgno, /* Page to describe */
     a = FileRead((pgno-1)*m_pagesize, m_pagesize);
     switch( a[hdr] )
     {
-    case 2:  zType = "interior node of index";  break;
-    case 5:  zType = "interior node of table";  break;
-    case 10: zType = "leaf of index";           break;
-    case 13: zType = "leaf of table";           break;
+    case 2:  zType = "interior node of index";
+        info.type = PAGE_TYPE_INDEX_INTERIOR;
+        break;
+    case 5:  zType = "interior node of table";
+        info.type = PAGE_TYPE_TABLE_INTERIOR;
+        break;
+    case 10: zType = "leaf of index";
+        info.type = PAGE_TYPE_INDEX_LEAF;
+        break;
+    case 13: zType = "leaf of table";
+        info.type = PAGE_TYPE_TABLE_LEAF;
+        break;
     }
 
-    info.type = a[hdr];
     info.parent = parent;
     info.pgno = pgno;
 
@@ -398,6 +405,7 @@ void CSQLite3DB::PageUsageBtree( int pgno, /* Page to describe */
     m_pageUsageInfo.push_back(info);
 
     nCell = a[hdr+3]*256 + a[hdr+4];
+    info.ncell = nCell;
     if( a[hdr]==2 || a[hdr]==5 ){
         int cellstart = hdr+12;
         unsigned int child;
@@ -457,13 +465,19 @@ void CSQLite3DB::PageUsageCell( unsigned char cType, /* Page type */ unsigned ch
         while( ovfl && (cnt++)<m_mxPage ){
             sprintf(zDesc, "%d overflow %d from cell %d of page %d",
                 ovfl, cnt, cellno, pgno);
+
+            PageUsageInfo info;
+            info.type = PAGE_TYPE_OVERFLOW;
+            info.pgno = ovfl;
+            info.parent = pgno;
+            info.overflow_page_idx = cnt;
+            info.overflow_cell_idx = cellno;
+            info.desc = zDesc;
+            m_pageUsageInfo.push_back(info);
+
             a = FileRead((ovfl-1)*m_pagesize, 4);
             ovfl = decodeInt32(a);
             sqlite3_free(a);
-
-            PageUsageInfo info;
-            info.desc = zDesc;
-            m_pageUsageInfo.push_back(info);
         }
     }
 }
