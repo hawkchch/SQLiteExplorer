@@ -10,4 +10,26 @@
         <file>ui/question.png</file>
         <file>ui/setting.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>ui/1.png</file>
+        <file>ui/2.png</file>
+        <file>ui/3.png</file>
+        <file>ui/4.png</file>
+        <file>ui/5.png</file>
+        <file>ui/6.png</file>
+        <file>ui/7.png</file>
+        <file>ui/8.png</file>
+        <file>ui/9.png</file>
+        <file>ui/10.png</file>
+        <file>ui/11.png</file>
+        <file>ui/12.png</file>
+        <file>ui/13.png</file>
+        <file>ui/14.png</file>
+        <file>ui/15.png</file>
+        <file>ui/16.png</file>
+        <file>ui/17.png</file>
+        <file>ui/18.png</file>
+        <file>ui/19.png</file>
+        <file>ui/0.png</file>
+    </qresource>
 </RCC>

@@ -18,17 +18,37 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Init MenuBar
-    m_pOpenAction = new QAction(QIcon(":/images/doc-open"), tr("&Open..."), this);
+    // Init Action
+    m_pOpenAction = new QAction(QIcon(":/ui/0.png"), tr("&Open..."), this);
     m_pOpenAction->setShortcuts(QKeySequence::Open);
-    m_pOpenAction->setStatusTip(tr("Open an existing file"));
-    connect(m_pOpenAction, &QAction::triggered, this, &MainWindow::open);
+    m_pOpenAction->setStatusTip(tr("Open Database"));
+    connect(m_pOpenAction, &QAction::triggered, this, &MainWindow::onOpenActionTriggered);
 
+    m_pCloseAction = new QAction(QIcon(":/ui/11.png"), tr("&Close..."), this);
+    m_pCloseAction->setShortcuts(QKeySequence::Close);
+    m_pCloseAction->setStatusTip(tr("Close Database"));
+    connect(m_pCloseAction, &QAction::triggered, this, &MainWindow::onCloseActionTriggered);
+
+    m_pCheckAction = new QAction(QIcon(":/ui/2.png"), tr("Check..."), this);
+    m_pCheckAction->setStatusTip(tr("Check Database Integrity"));
+    connect(m_pCheckAction, &QAction::triggered, this, &MainWindow::onCheckActionTriggered);
+
+    // Init File Menu And Tool
     QMenu *file = menuBar()->addMenu(tr("&File"));
     file->addAction(m_pOpenAction);
+    file->addAction(m_pCloseAction);
 
-    //QToolBar *toolBar = addToolBar(tr("&File"));
-    //toolBar->addAction(m_pOpenAction);
+    ui->mainToolBar->addAction(m_pOpenAction);
+    ui->mainToolBar->addAction(m_pCloseAction);
+
+    // Init Database Menu And Tool
+    file = menuBar()->addMenu(tr("&Database"));
+    file->addAction(m_pCheckAction);
+
+    QToolBar *toolBar = addToolBar(tr("&Database"));
+    toolBar->addAction(m_pCheckAction);
+
+
 
     // Init QTreeView
     m_pTreeView = new QTreeView(this);
@@ -81,7 +101,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Init CentralWidget
     ui->centralWidget->layout()->addWidget(m_pSplitter);
 
-    open();
+    onOpenActionTriggered();
 }
 
 MainWindow::~MainWindow()
@@ -89,7 +109,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::open()
+void MainWindow::onOpenActionTriggered()
 {
     QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), ".", tr("Sqlite Files(*.db *.sqlite)"));
     if(path.length() > 0)
@@ -113,6 +133,55 @@ void MainWindow::open()
         }
 
         m_pTreeView->expandAll();
+    }
+}
+
+void MainWindow::onCloseActionTriggered()
+{
+    if(m_mapSqlite3DBs.size() == 0)
+    {
+        return;
+    }
+
+    QString path = m_mapSqlite3DBs.key(m_pCurSQLite3DB);
+    if (path.size())
+    {
+        delete m_pCurSQLite3DB;
+        m_mapSqlite3DBs.remove(path);
+
+        int rowCount = m_pTreeViewModel->rowCount();
+        for(int i=0; i<rowCount; i++)
+        {
+            QModelIndex idx = m_pTreeViewModel->index(i, 0);
+            QString idxPath = idx.data(Qt::UserRole+1).toString();
+            if(idxPath == path)
+            {
+                m_pTreeViewModel->removeRow(i);
+                break;
+            }
+        }
+    }
+}
+
+void MainWindow::onCheckActionTriggered()
+{
+    QString path = m_mapSqlite3DBs.key(m_pCurSQLite3DB);
+    if (path.size())
+    {
+        table_content tb;
+        cell_content header;
+        m_pCurSQLite3DB->ExecuteCmd("PRAGMA integrity_check;", tb, header);
+
+        if(tb.size())
+        {
+            cell_content& cc = tb.front();
+            if(cc.size())
+            {
+                QString res = QString::fromStdString(cc[0]);
+                res = "Integrity check result: " + res;
+                QMessageBox::information(this, ("SQLiteExplorer"),res);
+            }
+        }
     }
 }
 

@@ -46,15 +46,20 @@ signals:
     void signalSQLiteQuery(const QString& sql);
 
 private Q_SLOTS:
-    void open();
     void OnTreeViewClick(const QModelIndex& index);
     void onProcessFinished(int ret);
+
+    void onOpenActionTriggered();
+    void onCloseActionTriggered();
+    void onCheckActionTriggered();
 
 private:
 
 private:
     // Menu and Tool
     QAction* m_pOpenAction;
+    QAction* m_pCloseAction;
+    QAction* m_pCheckAction;
 
 
     // QTreeView at left
