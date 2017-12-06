@@ -226,26 +226,45 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         for(auto it=infos.begin(); it!=infos.end(); ++it)
         {
             PageUsageInfo& info = *it;
+            QString color;
+            QString scell;
+            switch(info.type)
+            {
+            case PAGE_TYPE_OVERFLOW:
+                color = "#FEE3BA";
+                break;
+            case PAGE_TYPE_INDEX_INTERIOR:
+            case PAGE_TYPE_TABLE_INTERIOR:
+                color = "#E1C4C4";
+                break;
+            case PAGE_TYPE_INDEX_LEAF:
+            case PAGE_TYPE_TABLE_LEAF:
+                color = "#62C544";
+                break;
+            default:
+                break;
+            }
+
+            if(info.ncell>0)
+            {
+                int ncell = info.ncell;
+                if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
+                    ncell += 1;
+
+                scell = QString(" ncell %1").arg(ncell);
+            }
+
             if(info.type == PAGE_TYPE_OVERFLOW)
             {
-                content.push_back(QString("%1[color=\"yellow\", label=\"%1 overflow %2 from cell %3\"];")
+                content.push_back(QString("%1[color=\"%2\", label=\"%1 overflow %3 from cell %4\"];")
                                   .arg(info.pgno)
+                                  .arg(color)
                                   .arg(info.overflow_page_idx)
                                   .arg(info.overflow_cell_idx));
             }
             else
             {
-                if (info.ncell > 0)
-                {
-                    int ncell = info.ncell;
-                    if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
-                        ncell += 1;
-                    content.push_back(QString("%1[color=\"green\", label=\"%1 ncell %2\"];").arg(info.pgno).arg(ncell));
-                }
-                else
-                {
-                    content.push_back(QString("%1[color=\"green\", label=\"%1\"];").arg(info.pgno));
-                }
+                content.push_back(QString("%1[color=\"%2\", label=\"%1 %3\"];").arg(info.pgno).arg(color).arg(scell));
             }
 
         }
