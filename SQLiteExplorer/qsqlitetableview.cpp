@@ -1,6 +1,7 @@
 #include "qsqlitetableview.h"
 #include "mainwindow.h"
 #include <QMessageBox>
+#include <QHeaderView>
 
 QSQLiteTableView::QSQLiteTableView(QWidget *parent)
 : QTableWidget(parent)
@@ -12,6 +13,13 @@ QSQLiteTableView::QSQLiteTableView(QWidget *parent)
     {
         m_pParent = pMainWindow;
     }
+
+
+    QHeaderView *headers = horizontalHeader();
+    //SortIndicator为水平标题栏文字旁边的三角指示器
+    headers->setSortIndicator(0, Qt::AscendingOrder);
+    headers->setSortIndicatorShown(true);
+    connect(headers, SIGNAL(sectionClicked(int)), this, SLOT(sortByColumn(int)));
 }
 
 void QSQLiteTableView::onSQLiteQueryReceived(const QString &sql)
@@ -59,4 +67,9 @@ void QSQLiteTableView::onSQLiteQueryReceived(const QString &sql)
             }
         }
     }
+}
+
+void QSQLiteTableView::sortByColumn(int column)
+{
+
 }

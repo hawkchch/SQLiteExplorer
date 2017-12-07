@@ -17,6 +17,7 @@ public:
 
 public slots:
     void onSQLiteQueryReceived(const QString& sql);
+    void sortByColumn(int column);
 
 private:
     MainWindow* m_pParent;
