@@ -68,8 +68,3 @@ void QSQLiteTableView::onSQLiteQueryReceived(const QString &sql)
         }
     }
 }
-
-void QSQLiteTableView::sortByColumn(int column)
-{
-
-}
