@@ -33,6 +33,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pCheckAction->setStatusTip(tr("Check Database Integrity"));
     connect(m_pCheckAction, &QAction::triggered, this, &MainWindow::onCheckActionTriggered);
 
+    m_pVacuumAction = new QAction(QIcon(":/ui/6.png"), tr("&Vacuum..."), this);
+    m_pVacuumAction->setStatusTip(tr("Vacuum Database"));
+    connect(m_pVacuumAction, &QAction::triggered, this, &MainWindow::onVacuumActionTriggered);
+
     // Init File Menu And Tool
     QMenu *file = menuBar()->addMenu(tr("&File"));
     file->addAction(m_pOpenAction);
@@ -42,12 +46,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainToolBar->addAction(m_pCloseAction);
 
     // Init Database Menu And Tool
-    file = menuBar()->addMenu(tr("&Database"));
-    file->addAction(m_pCheckAction);
+    QMenu *tool = menuBar()->addMenu(tr("&Database"));
+    tool->addAction(m_pCheckAction);
+    tool->addAction(m_pVacuumAction);
 
     QToolBar *toolBar = addToolBar(tr("&Database"));
     toolBar->addAction(m_pCheckAction);
-
+    toolBar->addAction(m_pVacuumAction);
 
 
     // Init QTreeView
@@ -170,9 +175,12 @@ void MainWindow::onCheckActionTriggered()
     {
         table_content tb;
         cell_content header;
-        m_pCurSQLite3DB->ExecuteCmd("PRAGMA integrity_check;", tb, header);
-
-        if(tb.size())
+        QString errmsg = QString::fromStdString(m_pCurSQLite3DB->ExecuteCmd("PRAGMA integrity_check;", tb, header));
+        if(errmsg.size() == 0)
+        {
+            QMessageBox::information(this, tr("SQLiteExplorer"), errmsg);
+        }
+        else if(tb.size())
         {
             cell_content& cc = tb.front();
             if(cc.size())
@@ -181,6 +189,25 @@ void MainWindow::onCheckActionTriggered()
                 res = "Integrity check result: " + res;
                 QMessageBox::information(this, ("SQLiteExplorer"),res);
             }
+        }
+    }
+}
+
+void MainWindow::onVacuumActionTriggered()
+{
+    QString path = m_mapSqlite3DBs.key(m_pCurSQLite3DB);
+    if (path.size())
+    {
+        table_content tb;
+        cell_content header;
+        QString errmsg = QString::fromStdString(m_pCurSQLite3DB->ExecuteCmd("VACUUM;", tb, header));
+        if(errmsg.size() == 0)
+        {
+            QMessageBox::information(this, tr("SQLiteExplorer"), tr("Vacuum completed OK"));
+        }
+        else
+        {
+            QMessageBox::information(this, tr("SQLiteExplorer"), errmsg);
         }
     }
 }

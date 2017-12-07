@@ -151,11 +151,13 @@ int CSQLite3DB::GetPageSize()
     return m_pagesize;
 }
 
-void CSQLite3DB::ExecuteCmd(const string& sql, table_content& table , cell_content &headers)
+string CSQLite3DB::ExecuteCmd(const string& sql, table_content& table , cell_content &headers)
 {
+    string errmsg;
     sqlite3_stmt* stmt = NULL;
     do{
         if(SQLITE_OK != sqlite3_prepare(m_pDb, sql.c_str(), -1, &stmt, NULL)){
+            errmsg = sqlite3_errmsg(m_pDb);
             break;
         }
         while(SQLITE_ROW == sqlite3_step(stmt)){
@@ -190,6 +192,8 @@ void CSQLite3DB::ExecuteCmd(const string& sql, table_content& table , cell_conte
             }
         }
     }while(SQLITE_SCHEMA == sqlite3_finalize(stmt));
+
+    return errmsg;
 }
 
 bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, string& pkFieldName, string &pkType, int& pkIdx)

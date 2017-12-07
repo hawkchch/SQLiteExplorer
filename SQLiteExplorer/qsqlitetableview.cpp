@@ -1,5 +1,6 @@
 #include "qsqlitetableview.h"
 #include "mainwindow.h"
+#include <QMessageBox>
 
 QSQLiteTableView::QSQLiteTableView(QWidget *parent)
 : QTableWidget(parent)
@@ -29,26 +30,33 @@ void QSQLiteTableView::onSQLiteQueryReceived(const QString &sql)
 
     table_content tb;
     cell_content header;
-    m_pCurSQLite3DB->ExecuteCmd(sql.toStdString(), tb, header);
+    QString errmsg = QString::fromStdString(m_pCurSQLite3DB->ExecuteCmd(sql.toStdString(), tb, header));
 
-    setColumnCount(header.size());
-    QStringList list;
-    for(auto it=header.begin(); it!=header.end(); ++it)
+    if(!errmsg.isEmpty())
     {
-        list.push_back(QString::fromStdString(*it));
+        QMessageBox::information(this, tr("SQLiteExplorer"), errmsg);
     }
-
-    setHorizontalHeaderLabels(list);
-    setRowCount(tb.size());
-
-    for(size_t i=0; i<tb.size(); ++i)
+    else
     {
-        cell_content& cc = tb[i];
-        for(size_t j=0; j<cc.size(); ++j)
+        setColumnCount(header.size());
+        QStringList list;
+        for(auto it=header.begin(); it!=header.end(); ++it)
         {
-            QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
-            name->setText(QString::fromStdString(cc[j]));//设置内容
-            setItem(i,j,name);//把这个Item加到第一行第二列中
+            list.push_back(QString::fromStdString(*it));
+        }
+
+        setHorizontalHeaderLabels(list);
+        setRowCount(tb.size());
+
+        for(size_t i=0; i<tb.size(); ++i)
+        {
+            cell_content& cc = tb[i];
+            for(size_t j=0; j<cc.size(); ++j)
+            {
+                QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
+                name->setText(QString::fromStdString(cc[j]));//设置内容
+                setItem(i,j,name);//把这个Item加到第一行第二列中
+            }
         }
     }
 }

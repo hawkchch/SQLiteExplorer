@@ -52,6 +52,7 @@ private Q_SLOTS:
     void onOpenActionTriggered();
     void onCloseActionTriggered();
     void onCheckActionTriggered();
+    void onVacuumActionTriggered();
 
 private:
 
@@ -60,6 +61,7 @@ private:
     QAction* m_pOpenAction;
     QAction* m_pCloseAction;
     QAction* m_pCheckAction;
+    QAction* m_pVacuumAction;
 
 
     // QTreeView at left
