@@ -176,7 +176,7 @@ void MainWindow::onCheckActionTriggered()
         table_content tb;
         cell_content header;
         QString errmsg = QString::fromStdString(m_pCurSQLite3DB->ExecuteCmd("PRAGMA integrity_check;", tb, header));
-        if(errmsg.size() == 0)
+        if(!errmsg.isEmpty())
         {
             QMessageBox::information(this, tr("SQLiteExplorer"), errmsg);
         }
@@ -201,7 +201,7 @@ void MainWindow::onVacuumActionTriggered()
         table_content tb;
         cell_content header;
         QString errmsg = QString::fromStdString(m_pCurSQLite3DB->ExecuteCmd("VACUUM;", tb, header));
-        if(errmsg.size() == 0)
+        if(errmsg.isEmpty())
         {
             QMessageBox::information(this, tr("SQLiteExplorer"), tr("Vacuum completed OK"));
         }
