@@ -18,6 +18,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // Init Application icon
+    setWindowIcon(QIcon(":/ui/app.png"));
+
     // Init Action
     m_pOpenAction = new QAction(QIcon(":/ui/0.png"), tr("&Open..."), this);
     m_pOpenAction->setShortcuts(QKeySequence::Open);
