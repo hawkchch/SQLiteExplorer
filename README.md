@@ -6,4 +6,5 @@
 ![image](https://github.com/hawkchch/SQLiteExplorer/blob/master/art/3.png)
 ![image](https://github.com/hawkchch/SQLiteExplorer/blob/master/art/4.png)
 ![image](https://github.com/hawkchch/SQLiteExplorer/blob/master/art/5.png)
-
+![image](https://github.com/hawkchch/SQLiteExplorer/blob/master/art/6.png)
+![image](https://github.com/hawkchch/SQLiteExplorer/blob/master/art/7.png)
