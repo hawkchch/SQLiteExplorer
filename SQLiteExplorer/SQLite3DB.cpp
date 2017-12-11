@@ -239,6 +239,63 @@ vector<PageUsageInfo> CSQLite3DB::GetPageUsageInfos(const string &tableName)
     return m_pageUsageInfo;
 }
 
+map<string, string> CSQLite3DB::GetDatabaseInfo()
+{
+    if(m_pragmaInfos.size())
+        return m_pragmaInfos;
+
+    vector<string> keys;
+    keys.push_back("application_id");
+    keys.push_back("auto_vacuum");
+    keys.push_back("automatic_index");
+    keys.push_back("busy_timeout");
+    keys.push_back("cache_size");
+    keys.push_back("case_sensitive_like");
+    keys.push_back("checkpoint_fullfsync");
+    keys.push_back("collation_list");
+    keys.push_back("compile_options");
+    keys.push_back("encoding");
+    keys.push_back("foreign_keys");
+    keys.push_back("freelist_count");
+    keys.push_back("fullfsync");
+    keys.push_back("ignore_check_constraints");
+    keys.push_back("journal_mode");
+    keys.push_back("journal_size_limit");
+    keys.push_back("legacy_file_format");
+    keys.push_back("locking_mode");
+    keys.push_back("max_page_count");
+    keys.push_back("mmap_size");
+    keys.push_back("page_count");
+    keys.push_back("page_size");
+    keys.push_back("parser_trace");
+    keys.push_back("read_uncommitted");
+    keys.push_back("recursive_triggers");
+    keys.push_back("reverse_unordered_selects");
+    keys.push_back("schema_version");
+    keys.push_back("secure_delete");
+    keys.push_back("synchronous");
+    keys.push_back("temp_store");
+    keys.push_back("user_version");
+    keys.push_back("vdbe_addoptrace");
+    keys.push_back("vdbe_listing");
+    keys.push_back("vdbe_trace");
+    keys.push_back("wal_autocheckpoint");
+    keys.push_back("writable_schema");
+
+
+    for(auto it=keys.begin(); it!=keys.end(); ++it)
+    {
+        m_pragmaInfos[*it] = Pragma(*it);
+    }
+
+    return m_pragmaInfos;
+}
+
+void CSQLite3DB::SetDatabaseInfo(const string &key, const string &val)
+{
+
+}
+
 void CSQLite3DB::LoadSqliteMaster()
 {
     if (!m_bTableInfoHasLoad)
@@ -511,6 +568,24 @@ i64 CSQLite3DB::LocalPayload( i64 nPayload, char cType )
         nLocal = nPayload;
     }
     return nLocal;
+}
+
+string CSQLite3DB::Pragma(const string &key)
+{
+    table_content tb;
+    cell_content hdr;
+    string sql = "PRAGMA " + key;
+    string err = ExecuteCmd(sql, tb, hdr);
+    if(err.empty() && tb.size())
+    {
+        cell_content cc = tb.front();
+        if(cc.size())
+        {
+            return cc.front();
+        }
+    }
+
+    return err;
 }
 
 int CSQLite3DB::GetCellCounts(int pgno)

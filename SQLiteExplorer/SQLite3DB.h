@@ -132,7 +132,14 @@ public:
     // 获取表字段信息
     bool GetTableInfo(const string& tableName, table_content& tb);
 
+    // 获取Page信息
     vector<PageUsageInfo> GetPageUsageInfos(const string& tableName);
+
+    // 获取数据库信息
+    map<string, string> GetDatabaseInfo();
+
+    // 设置数据库信息
+    void SetDatabaseInfo(const string& key, const string& val);
 
 private:
     bool OpenDatabase();
@@ -169,6 +176,9 @@ private:
     i64 LocalPayload(i64 nPayload, char cType);
 
 private:
+    string Pragma(const string& key);
+
+private:
     string m_path;
     int    m_pagesize;      /* Size of a database page */
     uint64_t m_mxPage;      /* Last page number */
@@ -184,6 +194,8 @@ private:
 
 
     vector<PageUsageInfo> m_pageUsageInfo;
+
+    map<string, string> m_pragmaInfos;
 
 public:
     CSQLite3Page* m_pSqlite3Page;

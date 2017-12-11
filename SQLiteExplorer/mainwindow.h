@@ -72,7 +72,7 @@ private:
     QTabWidget* m_pTabWidget;
 
     QHexWindow*         m_pHexWindow;
-    QWidget*            m_pDatabase;
+    QTableWidget*       m_pDatabase;
     QSQLiteQueryWindow* m_pSQL;
     QSQLiteTableView*   m_pData;
     QWidget*            m_pDesign;

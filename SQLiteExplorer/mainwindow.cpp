@@ -71,28 +71,32 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_pTreeView,SIGNAL(clicked(const QModelIndex)),this, SLOT(OnTreeViewClick(const QModelIndex)));
 
-    // Init Data window (Tab 0)
+    // Init Database Window
+    m_pDatabase = new QTableWidget(this);
+
+    // Init Data Window
     m_pData = new QSQLiteTableView(this);
     connect(this, SIGNAL(signalSQLiteQuery(QString)), m_pData, SLOT(onSQLiteQueryReceived(QString)));
 
-    // Init SQL Window (Tab 1)
+    // Init SQL Window
     m_pSQL = new QSQLiteQueryWindow(this);
 
-    // Init QHexEditWindow
+    // Init Hex Window
     m_pHexWindow = new QHexWindow(this);
-    // Init QTextEdit DLL
+
+    // Init DDL Window
     m_pDDL = new QTextEdit(this);
     m_pDDL->setReadOnly(true);
 
+    // Init Graph Window
     m_pGraph = new QLabel(this);
     QScrollArea* sc = new QScrollArea(this);
     sc->setWidgetResizable(true);
     sc->setWidget(m_pGraph);
 
-
-
     // Init QTabWidget
     m_pTabWidget = new QTabWidget(this);
+    m_pTabWidget->addTab(m_pDatabase, "Database");
     m_pTabWidget->addTab(m_pData, "Data");
     m_pTabWidget->addTab(m_pSQL, "SQL");
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
@@ -140,7 +144,8 @@ void MainWindow::onOpenActionTriggered()
             root->appendRow(item);
         }
 
-        m_pTreeView->expandAll();
+        // m_pTreeView->expandAll();
+        m_pTreeView->expand(root->index());
     }
 }
 
@@ -225,13 +230,40 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
     {
         CSQLite3DB* pSqlite = it.value();
         m_pCurSQLite3DB = pSqlite;
+
+        QString sqls;
+        QString sql;
+
+        // Init Database Window
+        m_pDatabase->clear();
+
+
+        QStringList list;
+        list << "Name" << "Value";
+        m_pDatabase->setColumnCount(list.size());
+
+        m_pDatabase->setHorizontalHeaderLabels(list);
+        map<string, string> vals = m_pCurSQLite3DB->GetDatabaseInfo();
+        m_pDatabase->setRowCount(vals.size());
+        size_t i=0;
+        for(auto it=vals.begin(); it!=vals.end(); ++it, ++i)
+        {
+            QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
+            name->setText(QString::fromStdString(it->first));//设置内容
+            m_pDatabase->setItem(i,0,name);//把这个Item加到第一行第二列中
+
+            name=new QTableWidgetItem();//创建一个Item
+            name->setText(QString::fromStdString(it->second));//设置内容
+            m_pDatabase->setItem(i,1,name);//把这个Item加到第一行第二列中
+        }
+
+        // Init Hex Window
         vector<int> pageids;
         pageids = pSqlite->GetAllLeafPageIds(tableName.toStdString());
         m_pHexWindow->SetPageNos(pageids);
         m_pHexWindow->SetTableName(tableName);
 
-        QString sqls;
-        QString sql = QString("SELECT * FROM SQLITE_MASTER WHERE tbl_name='%1'").arg(tableName);
+        sql = QString("SELECT * FROM SQLITE_MASTER WHERE tbl_name='%1'").arg(tableName);
 
         table_content tb;
         cell_content cc;
