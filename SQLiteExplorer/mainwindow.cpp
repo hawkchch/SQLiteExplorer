@@ -81,6 +81,9 @@ MainWindow::MainWindow(QWidget *parent) :
     // Init SQL Window
     m_pSQL = new QSQLiteQueryWindow(this);
 
+    // Init Design Window
+    m_pDesign = new QTableWidget(this);
+
     // Init Hex Window
     m_pHexWindow = new QHexWindow(this);
 
@@ -99,6 +102,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTabWidget->addTab(m_pDatabase, "Database");
     m_pTabWidget->addTab(m_pData, "Data");
     m_pTabWidget->addTab(m_pSQL, "SQL");
+    m_pTabWidget->addTab(m_pDesign, "Design");
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
     m_pTabWidget->addTab(m_pDDL, "DDL");
     m_pTabWidget->addTab(sc, "Graph");
@@ -236,13 +240,11 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
         // Init Database Window
         m_pDatabase->clear();
+        QStringList header;
+        header << "Name" << "Value";
+        m_pDatabase->setColumnCount(header.size());
 
-
-        QStringList list;
-        list << "Name" << "Value";
-        m_pDatabase->setColumnCount(list.size());
-
-        m_pDatabase->setHorizontalHeaderLabels(list);
+        m_pDatabase->setHorizontalHeaderLabels(header);
         map<string, string> vals = m_pCurSQLite3DB->GetDatabaseInfo();
         m_pDatabase->setRowCount(vals.size());
         size_t i=0;
@@ -257,6 +259,39 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
             m_pDatabase->setItem(i,1,name);//把这个Item加到第一行第二列中
         }
 
+        // Init Design Window
+        m_pDesign->clear();
+        sql = QString("PRAGMA table_info(%1);").arg(tableName);
+
+        table_content tb;
+        cell_content cc;
+
+        string err = m_pCurSQLite3DB->ExecuteCmd(sql.toStdString(), tb, cc);
+
+        m_pDesign->setColumnCount(cc.size());
+        header.clear();
+
+        for(auto it=cc.begin(); it!=cc.end(); ++it)
+        {
+            header.push_back(QString::fromStdString(*it));
+        }
+
+        m_pDesign->setHorizontalHeaderLabels(header);
+        m_pDesign->setRowCount(tb.size());
+        for(size_t i=0; i<tb.size(); ++i)
+        {
+            const cell_content& cell = tb[i];
+            for(size_t j=0; j<cell.size(); ++j)
+            {
+                QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
+                name->setText(QString::fromStdString(cell[j]));//设置内容
+                m_pDesign->setItem(i,j,name);//把这个Item加到第一行第二列中
+            }
+        }
+        tb.clear();
+        cc.clear();
+
+
         // Init Hex Window
         vector<int> pageids;
         pageids = pSqlite->GetAllLeafPageIds(tableName.toStdString());
@@ -265,8 +300,6 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
         sql = QString("SELECT * FROM SQLITE_MASTER WHERE tbl_name='%1'").arg(tableName);
 
-        table_content tb;
-        cell_content cc;
         pSqlite->ExecuteCmd(sql.toStdString(), tb, cc);
         while(!tb.empty())
         {

@@ -75,7 +75,7 @@ private:
     QTableWidget*       m_pDatabase;
     QSQLiteQueryWindow* m_pSQL;
     QSQLiteTableView*   m_pData;
-    QWidget*            m_pDesign;
+    QTableWidget*       m_pDesign;
     QTextEdit*          m_pDDL;
     QLabel*             m_pGraph;
 

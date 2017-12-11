@@ -27,7 +27,6 @@ QHexWindow::QHexWindow(QWidget *parent) :
     m_pSplitter->setStretchFactor(0, 5);
     m_pSplitter->setStretchFactor(1, 1);
 
-
     // Init layout
     ui->widget_2->setLayout(new QHBoxLayout);
     ui->widget_2->layout()->setMargin(0);
