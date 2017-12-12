@@ -117,7 +117,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Init CentralWidget
     ui->centralWidget->layout()->addWidget(m_pSplitter);
 
-    onOpenActionTriggered();
+    // onOpenActionTriggered();
 }
 
 MainWindow::~MainWindow()
@@ -127,7 +127,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::onOpenActionTriggered()
 {
-    QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), ".", tr("Sqlite Files(*.db *.sqlite)"));
+    QFileDialog::Options options;
+    options |= QFileDialog::DontUseNativeDialog;
+    QString selectedFilter;
+    QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), "", tr("Sqlite Files(*.db *.sqlite)"), &selectedFilter, options);
     if(path.length() > 0)
     {
         CSQLite3DB *pSqlite = new CSQLite3DB(path.toStdString());
