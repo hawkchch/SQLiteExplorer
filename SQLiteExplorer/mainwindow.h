@@ -39,6 +39,10 @@ public:
         return m_pCurSQLite3DB;
     }
 
+protected:
+    void dragEnterEvent(QDragEnterEvent* e);
+    void dropEvent(QDropEvent* e);
+
 private:
     Ui::MainWindow *ui;
 
@@ -55,6 +59,7 @@ private Q_SLOTS:
     void onVacuumActionTriggered();
 
 private:
+    bool openDatabaseFile(const QString& path);
 
 private:
     // Menu and Tool

@@ -6,6 +6,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QModelIndex>
+#include <QMimeData>
+
 #include "qsqlitetableview.h"
 #include "qsqlitequerywindow.h"
 
@@ -118,6 +120,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->centralWidget->layout()->addWidget(m_pSplitter);
 
     // onOpenActionTriggered();
+
+    setAcceptDrops(true);
 }
 
 MainWindow::~MainWindow()
@@ -125,34 +129,41 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::dragEnterEvent(QDragEnterEvent *e)
+{
+    //如果类型是jpg或者png才能接受拖动。
+    //这里的compare字符串比较函数，相等的时候返回0，所以要取反
+    /*
+    if(!event->mimeData()->urls()[0].fileName().right(3).compare("jpg") ||!event->mimeData()->urls()[0].fileName().right(3).compare("png"))
+        event->acceptProposedAction();
+    else
+        event->ignore();//否则不接受鼠标事件
+    */
+
+    e->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent *e)
+{
+    QList<QUrl> urls = e->mimeData()->urls();
+    if(urls.isEmpty())
+        return ;
+
+    foreach (QUrl u, urls) {
+        openDatabaseFile(u.toLocalFile());
+    }
+}
+
 void MainWindow::onOpenActionTriggered()
 {
     QFileDialog::Options options;
-    options |= QFileDialog::DontUseNativeDialog;
+    //options |= QFileDialog::DontUseNativeDialog;
     QString selectedFilter;
-    QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), "", tr("Sqlite Files(*.db *.sqlite)"), &selectedFilter, options);
+    //Sqlite Files(*.db *.sqlite)
+    QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), "", tr("*.*"), &selectedFilter, options);
     if(path.length() > 0)
     {
-        CSQLite3DB *pSqlite = new CSQLite3DB(path.toStdString());
-        m_mapSqlite3DBs[path] = pSqlite;
-        m_pCurSQLite3DB = pSqlite;
-
-        QFileInfo fi(path);
-
-        QStandardItem* root = new QStandardItem(QIcon(":/tableview/ui/db.png"), fi.baseName());
-        root->setData(path, Qt::UserRole+1);
-
-        m_pTreeViewModel->appendRow(root);
-
-        vector<string> vs = pSqlite->GetAllTableNames();
-        for(auto it=vs.begin(); it!=vs.end(); ++it)
-        {
-            QStandardItem* item = new QStandardItem(QIcon(":/tableview/ui/table.png"), QString::fromStdString(*it));
-            root->appendRow(item);
-        }
-
-        // m_pTreeView->expandAll();
-        m_pTreeView->expand(root->index());
+        openDatabaseFile(path);
     }
 }
 
@@ -225,6 +236,30 @@ void MainWindow::onVacuumActionTriggered()
             QMessageBox::information(this, tr("SQLiteExplorer"), errmsg);
         }
     }
+}
+
+bool MainWindow::openDatabaseFile(const QString &path)
+{
+    CSQLite3DB *pSqlite = new CSQLite3DB(path.toStdString());
+    m_mapSqlite3DBs[path] = pSqlite;
+    m_pCurSQLite3DB = pSqlite;
+
+    QFileInfo fi(path);
+
+    QStandardItem* root = new QStandardItem(QIcon(":/tableview/ui/db.png"), fi.baseName());
+    root->setData(path, Qt::UserRole+1);
+
+    m_pTreeViewModel->appendRow(root);
+
+    vector<string> vs = pSqlite->GetAllTableNames();
+    for(auto it=vs.begin(); it!=vs.end(); ++it)
+    {
+        QStandardItem* item = new QStandardItem(QIcon(":/tableview/ui/table.png"), QString::fromStdString(*it));
+        root->appendRow(item);
+    }
+
+    m_pTreeView->expand(root->index());
+    return true;
 }
 
 void MainWindow::OnTreeViewClick(const QModelIndex& index)

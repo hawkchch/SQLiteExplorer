@@ -32,7 +32,7 @@
         <x>20</x>
         <y>210</y>
         <width>271</width>
-        <height>40</height>
+        <height>60</height>
        </rect>
       </property>
       <property name="minimumSize">
@@ -44,10 +44,25 @@
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>40</height>
+        <height>60</height>
        </size>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="spacing">
+        <number>5</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
