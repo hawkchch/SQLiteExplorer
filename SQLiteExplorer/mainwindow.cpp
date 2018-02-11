@@ -13,6 +13,7 @@
 
 #include <QDebug>
 #include <QProcess>
+#include <qevent.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -251,10 +252,66 @@ bool MainWindow::openDatabaseFile(const QString &path)
 
     m_pTreeViewModel->appendRow(root);
 
-    vector<string> vs = pSqlite->GetAllTableNames();
-    for(auto it=vs.begin(); it!=vs.end(); ++it)
+
+    table_content tb;
+    cell_content hdr;
+    QString errmsg = QString::fromStdString(pSqlite->ExecuteCmd("select type, name, tbl_name from sqlite_master order by tbl_name, name", tb, hdr));
+
+    if (errmsg.size() > 0)
     {
-        QStandardItem* item = new QStandardItem(QIcon(":/tableview/ui/table.png"), QString::fromStdString(*it));
+        QMessageBox::information(this, tr("SQLiteExplorer"), errmsg);
+        return false;
+    }
+
+    QMap<QString, QStringList> mapIndex;
+    QMap<QString, QStringList> mapTrigger;
+    QStringList listView;
+
+    while(!tb.empty())
+    {
+        cell_content cell = tb.front();
+        tb.pop_front();
+
+        const string& type = cell[0];
+        QString name = QString::fromStdString(cell[1]);
+        QString tbl_name = QString::fromStdString(cell[2]);
+        if (type == "table")
+        {
+            mapIndex[tbl_name];
+            mapTrigger[tbl_name];
+        }
+        else if (type == "index")
+        {
+            mapIndex[tbl_name].push_back(name);
+        }
+        else if (type == "trigger")
+        {
+            mapTrigger[tbl_name].push_back(name);
+        }
+        else if (type == "view")
+        {
+            listView.push_back(name);
+        }
+    }
+
+
+    for(auto it=mapIndex.begin(); it!=mapIndex.end(); ++it)
+    {
+        QString tblname = it.key();
+        const QStringList& idxList = it.value();
+        const QStringList& triggerList = mapTrigger[tblname];
+        QStandardItem* item = new QStandardItem(QIcon(":/tableview/ui/table.png"), tblname);
+
+        foreach(QString s, idxList)
+        {
+            item->appendRow(new QStandardItem(QIcon(":/tableview/ui/index.jpg"), s));
+        }
+
+        foreach(QString s, triggerList)
+        {
+            item->appendRow(new QStandardItem(QIcon(":/tableview/ui/trigger.png"), s));
+        }
+
         root->appendRow(item);
     }
 

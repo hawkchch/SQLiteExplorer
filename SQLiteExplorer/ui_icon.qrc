@@ -2,6 +2,8 @@
     <qresource prefix="/tableview">
         <file>ui/db.png</file>
         <file>ui/table.png</file>
+        <file>ui/index.jpg</file>
+        <file>ui/trigger.png</file>
     </qresource>
     <qresource prefix="/toolicon">
         <file>ui/find.png</file>
