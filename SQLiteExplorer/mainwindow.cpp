@@ -315,6 +315,11 @@ bool MainWindow::openDatabaseFile(const QString &path)
         root->appendRow(item);
     }
 
+    foreach(QString s, listView)
+    {
+        root->appendRow(new QStandardItem(QIcon(":/tableview/ui/view.png"), s));
+    }
+
     m_pTreeView->expand(root->index());
     return true;
 }
