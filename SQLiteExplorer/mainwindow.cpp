@@ -403,8 +403,8 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         // Init Hex Window
         vector<int> pageids;
         pageids = pSqlite->GetAllLeafPageIds(tableName.toStdString());
-        m_pHexWindow->SetPageNos(pageids);
         m_pHexWindow->SetTableName(tableName);
+        m_pHexWindow->SetPageNos(pageids);
 
         sql = QString("SELECT * FROM SQLITE_MASTER WHERE tbl_name='%1'").arg(tableName);
 

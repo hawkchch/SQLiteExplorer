@@ -6,6 +6,6 @@ SUBDIRS += SQLiteExplorer
 
 #QMAKE_CXXFLAGS += /MP
 
-CONFIG += ordered
+#CONFIG += ordered
 TEMPLATE  = subdirs
 
