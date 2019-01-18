@@ -90,6 +90,7 @@ CSQLite3DB::CSQLite3DB(const string& path)
 
 CSQLite3DB::~CSQLite3DB(void)
 {
+    sqlite3_close(m_pDb);
 }
 
 vector<string> CSQLite3DB::GetAllTableNames()

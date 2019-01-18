@@ -127,6 +127,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    for(QMap<QString, CSQLite3DB*>::iterator it=m_mapSqlite3DBs.begin(); it!=m_mapSqlite3DBs.end(); it++)
+    {
+        if(*it)
+            delete(*it);
+    }
+
+    m_mapSqlite3DBs.clear();
+
     delete ui;
 }
 
