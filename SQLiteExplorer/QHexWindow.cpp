@@ -219,7 +219,7 @@ void QHexWindow::onCurrentAddressChanged(qint64 address)
                     val = "(null)";
                     break;
                 case SQLITE_TYPE_BLOB:
-                    val = "[BLOB]";
+                    val = QString::fromStdString(var.text);
                     break;
                 default:
                     break;

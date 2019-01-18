@@ -500,7 +500,7 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
         QString program = "dot";
         QStringList arguments;
-        arguments << "-Tjpg" << "tmp.dot" << "-o" << "tmp.jpg";
+        arguments << "-Tpng" << "tmp.dot" << "-o" << "tmp.png";
         QProcess *myProcess = new QProcess(this);
         connect(myProcess, SIGNAL(finished(int)), this, SLOT(onProcessFinished(int)));
         myProcess->start(program, arguments);
@@ -509,7 +509,7 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
 void MainWindow::onProcessFinished(int ret)
 {
-    QString path = QString("tmp.jpg");
+    QString path = QString("tmp.png");
     QPixmap px;
     px.load(path);
     m_pGraph->setPixmap(px);
