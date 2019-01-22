@@ -9,14 +9,22 @@
 #include <QTextEdit>
 
 #include <QHexEdit/qhexedit.h>
-#include <QHexWindow.h>
 #include <QSplitter>
 #include <QAction>
 #include <QStandardItemModel>
 #include <QModelIndex>
 #include <QLabel>
 #include <QColumnView>
+#include <QTimeLine>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsItemAnimation>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include "pixitem.h"
+#include <QPixmap>
+#include <QTimerEvent>
 
+#include "QHexWindow.h"
 #include "SQLite3DB.h"
 
 namespace Ui {
@@ -82,7 +90,12 @@ private:
     QSQLiteTableView*   m_pData;
     QTableWidget*       m_pDesign;
     QTextEdit*          m_pDDL;
-    QLabel*             m_pGraph;
+    /////////////////////////////////////////////////////////
+    /// \brief m_graph
+    QGraphicsScene* m_graphicsScene;
+    PixItem*        m_graphicsItem;
+    QGraphicsView*  m_graphicsView;
+    /////////////////////////////////////////////////////////
 
     // QSplitter
     QSplitter* m_pSplitter;

@@ -32,7 +32,8 @@ SOURCES += \
     SQLite3DB.cpp \
     utils.cpp \
     qsqlitetableview.cpp \
-    qsqlitequerywindow.cpp
+    qsqlitequerywindow.cpp \
+    pixitem.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,7 +41,8 @@ HEADERS += \
     SQLite3DB.h \
     utils.h \
     qsqlitetableview.h \
-    qsqlitequerywindow.h
+    qsqlitequerywindow.h \
+    pixitem.h
 
 CONFIG += c++11
 

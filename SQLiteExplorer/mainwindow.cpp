@@ -95,10 +95,12 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pDDL->setReadOnly(true);
 
     // Init Graph Window
-    m_pGraph = new QLabel(this);
-    QScrollArea* sc = new QScrollArea(this);
-    sc->setWidgetResizable(true);
-    sc->setWidget(m_pGraph);
+    m_graphicsScene = new QGraphicsScene;
+    m_graphicsItem = new PixItem;
+    m_graphicsView = new QGraphicsView(this);
+    m_graphicsScene->addItem(m_graphicsItem);
+    m_graphicsView->setScene(m_graphicsScene);
+
 
     // Init QTabWidget
     m_pTabWidget = new QTabWidget(this);
@@ -108,7 +110,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTabWidget->addTab(m_pDesign, "Design");
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
     m_pTabWidget->addTab(m_pDDL, "DDL");
-    m_pTabWidget->addTab(sc, "Graph");
+    m_pTabWidget->addTab(m_graphicsView, "Graph");
 
     // Init Splitter
     m_pSplitter = new QSplitter(Qt::Horizontal);
@@ -124,6 +126,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setAcceptDrops(true);
 }
+
 
 MainWindow::~MainWindow()
 {
@@ -512,6 +515,10 @@ void MainWindow::onProcessFinished(int ret)
     QString path = QString("tmp.png");
     QPixmap px;
     px.load(path);
-    m_pGraph->setPixmap(px);
 
+    m_graphicsItem->setPixmap(px);
+    m_graphicsItem->setPos(0,0);
+    qreal w = px.width();
+    qreal h = px.height();
+    m_graphicsScene->setSceneRect(-1*(w/2), -1*(h/2), w, h);
 }
