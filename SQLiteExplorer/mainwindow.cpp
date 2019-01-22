@@ -122,7 +122,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Init CentralWidget
     ui->centralWidget->layout()->addWidget(m_pSplitter);
 
-    onOpenActionTriggered();
+    //onOpenActionTriggered();
 
     setAcceptDrops(true);
 }
@@ -172,8 +172,8 @@ void MainWindow::onOpenActionTriggered()
     //options |= QFileDialog::DontUseNativeDialog;
     QString selectedFilter;
     //Sqlite Files(*.db *.sqlite)
-    //QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), "", tr("*.*"), &selectedFilter, options);
-    QString path = "D:\\git-project\\SQLiteExplorer\\MM.sqlite";
+    QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), "", tr("*.*"), &selectedFilter, options);
+    //QString path = "D:\\git-project\\SQLiteExplorer\\MM.sqlite";
     if(path.length() > 0)
     {
         openDatabaseFile(path);

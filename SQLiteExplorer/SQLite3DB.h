@@ -185,17 +185,12 @@ private:
     uint64_t m_mxPage;      /* Last page number */
     int           m_bRaw;   /* True to access db file via OS APIs */
     int           m_dbfd;   /* File descriptor for reading the DB */
-
     sqlite3_file* m_pFd;    /* File descriptor for non-raw mode */
-    sqlite3*      m_pDb;    /* Database handle that owns pFd */
-
 
     map<string, TableSchema> m_mapTableSchema;
     bool m_bTableInfoHasLoad;
 
-
     vector<PageUsageInfo> m_pageUsageInfo;
-
     map<string, string> m_pragmaInfos;
 
 public:
