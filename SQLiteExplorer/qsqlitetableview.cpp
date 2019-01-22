@@ -2,11 +2,13 @@
 #include "mainwindow.h"
 #include <QMessageBox>
 #include <QHeaderView>
+#include <QDebug>
 
 QSQLiteTableView::QSQLiteTableView(QWidget *parent)
 : QTableWidget(parent)
 , m_pParent(nullptr)
 , m_pCurSQLite3DB(nullptr)
+, m_rowThresh(100)
 {
     MainWindow* pMainWindow = qobject_cast<MainWindow*>(parent);
     if (pMainWindow)
@@ -14,12 +16,11 @@ QSQLiteTableView::QSQLiteTableView(QWidget *parent)
         m_pParent = pMainWindow;
     }
 
-
     QHeaderView *headers = horizontalHeader();
     //SortIndicator为水平标题栏文字旁边的三角指示器
     headers->setSortIndicator(0, Qt::AscendingOrder);
     headers->setSortIndicatorShown(true);
-    connect(headers, SIGNAL(sectionClicked(int)), this, SLOT(sortByColumn(int)));
+    connect(this->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(onValueChanged(int)));
 }
 
 void QSQLiteTableView::onSQLiteQueryReceived(const QString &sql)
@@ -35,36 +36,92 @@ void QSQLiteTableView::onSQLiteQueryReceived(const QString &sql)
 
     clear();
     setColumnCount(0);
+    setRowCount(0);
+    m_rowThresh = 100;
 
-    table_content tb;
-    cell_content header;
-    QString errmsg = QString::fromStdString(m_pCurSQLite3DB->ExecuteCmd(sql.toStdString(), tb, header));
+    try
+    {
+        string s = sql.toStdString();
+        m_curQuery = m_pCurSQLite3DB->execQuery(s.c_str());
+        CppSQLite3Query& q = m_curQuery;
 
-    if(!errmsg.isEmpty())
-    {
-        QMessageBox::information(this, tr("SQLiteExplorer"), errmsg);
-    }
-    else
-    {
-        setColumnCount(header.size());
-        QStringList list;
-        for(auto it=header.begin(); it!=header.end(); ++it)
+        QStringList headers;
+        for(int i=0; i<q.numFields(); i++)
         {
-            list.push_back(QString::fromStdString(*it));
+            headers.push_back(QString::fromStdString(q.fieldName(i)));
         }
+        setColumnCount(headers.size());
 
-        setHorizontalHeaderLabels(list);
-        setRowCount(tb.size());
+        setHorizontalHeaderLabels(headers);
 
-        for(size_t i=0; i<tb.size(); ++i)
+        while (!q.eof())
         {
-            cell_content& cc = tb[i];
-            for(size_t j=0; j<cc.size(); ++j)
+            insertRow(rowCount());
+            for(int col=0; col<q.numFields(); col++)
             {
-                QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
-                name->setText(QString::fromStdString(cc[j]));//设置内容
-                setItem(i,j,name);//把这个Item加到第一行第二列中
+                QTableWidgetItem *name = new QTableWidgetItem();
+                name->setText(QString::fromStdString(q.getStringField(col)));
+                setItem(rowCount()-1, col, name);
+            }
+            q.nextRow();
+            if(rowCount() >= m_rowThresh)
+            {
+                break;
             }
         }
+
+        QString msg;
+        if(!q.eof())
+        {
+            msg = QString("数据过多，已加载%1条记录").arg(rowCount());
+        }
+        else
+        {
+            msg = QString("数据加载完成，共加载%1条记录").arg(rowCount());
+        }
+        emit dataLoaded(msg);
+        qDebug() << msg;
+    }
+    catch(CppSQLite3Exception& e)
+    {
+        QMessageBox::information(this, tr("SQLiteExplorer"), QString::fromStdString(e.errorMessage()));
+    }
+}
+
+void QSQLiteTableView::onValueChanged(int value)
+{
+//    qDebug() << "value =" << value << ", VSBar Max =" << verticalScrollBar()->maximum()
+//             << ", m_rowThresh =" << m_rowThresh;
+    if(value == verticalScrollBar()->maximum() && !m_curQuery.eof())
+    {
+        //qDebug() << "Enter ";
+        m_rowThresh *= 2;
+        CppSQLite3Query& q = m_curQuery;
+        while (!q.eof())
+        {
+            insertRow(rowCount());
+            for(int col=0; col<q.numFields(); col++)
+            {
+                QTableWidgetItem *name = new QTableWidgetItem();
+                name->setText(QString::fromStdString(q.getStringField(col)));
+                setItem(rowCount()-1, col, name);
+            }
+            q.nextRow();
+            if(rowCount() >= m_rowThresh)
+            {
+                break;
+            }
+        }
+        QString msg;
+        if(!q.eof())
+        {
+            msg = QString("数据过多，已加载%1条记录").arg(rowCount());
+        }
+        else
+        {
+            msg = QString("数据加载完成，共加载%1条记录").arg(rowCount());
+        }
+        emit dataLoaded(msg);
+        qDebug() << msg;
     }
 }

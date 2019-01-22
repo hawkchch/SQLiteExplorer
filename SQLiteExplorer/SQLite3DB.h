@@ -7,6 +7,7 @@ using namespace std;
 
 #include "sqlite3.h"
 #include "utils.h"
+#include "CppSQLite3.h"
 
 typedef deque<string> cell_content;
 typedef deque<cell_content> table_content;
@@ -91,7 +92,7 @@ struct PageUsageInfo
 class CSQLite3Page;
 class CSQLite3Payload;
 
-class CSQLite3DB
+class CSQLite3DB : public CppSQLite3DB
 {
     friend class CSQLite3Page;
     friend class CSQLite3Payload;

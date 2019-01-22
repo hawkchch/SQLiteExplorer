@@ -65,7 +65,6 @@ CSQLite3DB::CSQLite3DB(const string& path)
 , m_mxPage(0)
 , m_bRaw(0)
 , m_pFd(0)
-, m_pDb(0)
 , m_path(path)
 , m_bTableInfoHasLoad(false)
 , m_pSqlite3Page(NULL)
@@ -90,7 +89,7 @@ CSQLite3DB::CSQLite3DB(const string& path)
 
 CSQLite3DB::~CSQLite3DB(void)
 {
-    sqlite3_close(m_pDb);
+
 }
 
 vector<string> CSQLite3DB::GetAllTableNames()
@@ -157,8 +156,8 @@ string CSQLite3DB::ExecuteCmd(const string& sql, table_content& table , cell_con
     string errmsg;
     sqlite3_stmt* stmt = NULL;
     do{
-        if(SQLITE_OK != sqlite3_prepare(m_pDb, sql.c_str(), -1, &stmt, NULL)){
-            errmsg = sqlite3_errmsg(m_pDb);
+        if(SQLITE_OK != sqlite3_prepare(mpDB, sql.c_str(), -1, &stmt, NULL)){
+            errmsg = sqlite3_errmsg(mpDB);
             break;
         }
         while(SQLITE_ROW == sqlite3_step(stmt)){
@@ -326,15 +325,25 @@ void CSQLite3DB::LoadSqliteMaster()
 
 bool CSQLite3DB::OpenDatabase()
 {
-    int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI;
-    int rc = sqlite3_open_v2(m_path.c_str(), &m_pDb, flags, 0);
-    if( rc!=SQLITE_OK ){
-        const char *zErr = sqlite3_errmsg(m_pDb);
-        fprintf(stderr, "can't open %s (%s)\n", m_path.c_str(), zErr);
-        sqlite3_close(m_pDb);
-        m_pDb = NULL;
+    try
+    {
+        open(m_path.c_str());
+        return true;
     }
-    return (m_pDb!=NULL);
+    catch(CppSQLite3Exception& e)
+    {
+        e.errorMessage();
+        return false;
+    }
+//    int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI;
+//    int rc = sqlite3_open_v2(m_path.c_str(), &mpDB, flags, 0);
+//    if( rc!=SQLITE_OK ){
+//        const char *zErr = sqlite3_errmsg(mpDB);
+//        fprintf(stderr, "can't open %s (%s)\n", m_path.c_str(), zErr);
+//        sqlite3_close(mpDB);
+//        mpDB = NULL;
+//    }
+//    return (mpDB!=NULL);
 }
 
 bool CSQLite3DB::FileOpen()
@@ -348,7 +357,7 @@ bool CSQLite3DB::FileOpen()
         {
             return false;
         }
-        rc = sqlite3_file_control(m_pDb, "main", SQLITE_FCNTL_FILE_POINTER, pArg);
+        rc = sqlite3_file_control(mpDB, "main", SQLITE_FCNTL_FILE_POINTER, pArg);
         if( rc!=SQLITE_OK ){
             fprintf(stderr, 
                 "failed to obtain fd for %s (SQLite too old?)\n", m_path.c_str()
@@ -358,7 +367,7 @@ bool CSQLite3DB::FileOpen()
     }
     else
     {
-        m_dbfd = open(m_path.c_str(), O_RDONLY);
+        m_dbfd = ::open(m_path.c_str(), O_RDONLY);
         if( m_dbfd<0 ){
             fprintf(stderr,"can't open %s\n", m_path.c_str());
             isOk = false;
@@ -370,11 +379,11 @@ bool CSQLite3DB::FileOpen()
 void CSQLite3DB::FileClose()
 {
     if( m_bRaw==0 ){
-        sqlite3_close(m_pDb);
-        m_pDb = 0;
+        sqlite3_close(mpDB);
+        mpDB = 0;
         m_pFd = 0;
     }else{
-        close(m_dbfd);
+        ::close(m_dbfd);
         m_dbfd = -1;
     }
 }

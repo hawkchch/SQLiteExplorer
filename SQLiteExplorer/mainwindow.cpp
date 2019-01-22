@@ -122,7 +122,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Init CentralWidget
     ui->centralWidget->layout()->addWidget(m_pSplitter);
 
-    // onOpenActionTriggered();
+    onOpenActionTriggered();
 
     setAcceptDrops(true);
 }
@@ -172,7 +172,8 @@ void MainWindow::onOpenActionTriggered()
     //options |= QFileDialog::DontUseNativeDialog;
     QString selectedFilter;
     //Sqlite Files(*.db *.sqlite)
-    QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), "", tr("*.*"), &selectedFilter, options);
+    //QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), "", tr("*.*"), &selectedFilter, options);
+    QString path = "D:\\git-project\\SQLiteExplorer\\MM.sqlite";
     if(path.length() > 0)
     {
         openDatabaseFile(path);
@@ -211,22 +212,20 @@ void MainWindow::onCheckActionTriggered()
     QString path = m_mapSqlite3DBs.key(m_pCurSQLite3DB);
     if (path.size())
     {
-        table_content tb;
-        cell_content header;
-        QString errmsg = QString::fromStdString(m_pCurSQLite3DB->ExecuteCmd("PRAGMA integrity_check;", tb, header));
-        if(!errmsg.isEmpty())
+        try
         {
-            QMessageBox::information(this, tr("SQLiteExplorer"), errmsg);
-        }
-        else if(tb.size())
-        {
-            cell_content& cc = tb.front();
-            if(cc.size())
+            CppSQLite3Table table = m_pCurSQLite3DB->getTable("PRAGMA integrity_check;");
+            if(table.numRows() == 1)
             {
-                QString res = QString::fromStdString(cc[0]);
+                table.setRow(0);
+                QString res = QString::fromStdString(table.getStringField(0));
                 res = "Integrity check result: " + res;
                 QMessageBox::information(this, ("SQLiteExplorer"),res);
             }
+        }
+        catch(CppSQLite3Exception& e)
+        {
+            QMessageBox::information(this, tr("SQLiteExplorer"), QString::fromStdString(e.errorMessage()));
         }
     }
 }
@@ -236,16 +235,14 @@ void MainWindow::onVacuumActionTriggered()
     QString path = m_mapSqlite3DBs.key(m_pCurSQLite3DB);
     if (path.size())
     {
-        table_content tb;
-        cell_content header;
-        QString errmsg = QString::fromStdString(m_pCurSQLite3DB->ExecuteCmd("VACUUM;", tb, header));
-        if(errmsg.isEmpty())
+        try
         {
+            m_pCurSQLite3DB->execDML("VACUUM;");
             QMessageBox::information(this, tr("SQLiteExplorer"), tr("Vacuum completed OK"));
         }
-        else
+        catch(CppSQLite3Exception& e)
         {
-            QMessageBox::information(this, tr("SQLiteExplorer"), errmsg);
+            QMessageBox::information(this, tr("SQLiteExplorer"), QString::fromStdString(e.errorMessage()));
         }
     }
 }
