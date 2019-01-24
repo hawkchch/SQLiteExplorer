@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     // Init QTreeView
-    m_pTreeView = new QTreeView(this);
+    m_pTreeView = new QSQLiteTablesTreeView(this);
     m_pTreeViewModel = new QStandardItemModel(m_pTreeView);
     m_pTreeView->setModel(m_pTreeViewModel);
     m_pTreeView->setHeaderHidden(true); // 隐藏表头
@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTreeView->setStyleSheet("QTableView{background-color: rgb(250, 250, 115);"
         "alternate-background-color: rgb(141, 163, 215);}");
 
-    connect(m_pTreeView,SIGNAL(clicked(const QModelIndex)),this, SLOT(OnTreeViewClick(const QModelIndex)));
+    connect(m_pTreeView,SIGNAL(signalCurrentChanged(QModelIndex)),this, SLOT(OnTreeViewClick(const QModelIndex)));
 
     // Init Database Window
     m_pDatabase = new QTableWidget(this);

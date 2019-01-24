@@ -58,6 +58,9 @@ DESTDIR  = $$PWD/../bin
 LIBS = -L$$DESTDIR -lsqlite3
 
 include(QHexEdit/QHexEdit.pri)
+include(QSQLiteTablesTreeView/QSQLiteTablesTreeView.pri)
 
 RESOURCES += \
     ui_icon.qrc
+
+DISTFILES +=
