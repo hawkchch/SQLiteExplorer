@@ -71,9 +71,9 @@ protected:
     void shrink();
     void scaling(qreal scaleFactor);
 
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
+//    void mousePressEvent(QMouseEvent *event);
+//    void mouseMoveEvent(QMouseEvent *event);
+//    void mouseReleaseEvent(QMouseEvent *event);
 
 private:
     qreal m_scalingOffset;

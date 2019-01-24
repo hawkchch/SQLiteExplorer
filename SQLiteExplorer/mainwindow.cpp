@@ -97,7 +97,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Init Graph Window
     m_graphicsScene = new QGraphicsScene;
     m_graphicsItem = new PixItem;
-    m_graphicsView = new QGraphicsView(this);
+    m_graphicsView = new MyGraphicsView(this);
     m_graphicsScene->addItem(m_graphicsItem);
     m_graphicsView->setScene(m_graphicsScene);
 
@@ -498,7 +498,7 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         f.write(content.toStdString().c_str());
         f.close();
 
-        QString program = "dot";
+        QString program = "graphviz2.38/dot";
         QStringList arguments;
         arguments << "-Tpng" << "tmp.dot" << "-o" << "tmp.png";
         QProcess *myProcess = new QProcess(this);
@@ -515,6 +515,7 @@ void MainWindow::onProcessFinished(int ret)
 
     m_graphicsItem->setPixmap(px);
     m_graphicsItem->setPos(0,0);
+    m_graphicsItem->setZoomState(1);
     qreal w = px.width();
     qreal h = px.height();
     m_graphicsScene->setSceneRect(-1*(w/2), -1*(h/2), w, h);

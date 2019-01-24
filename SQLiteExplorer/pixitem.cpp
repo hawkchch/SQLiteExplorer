@@ -38,6 +38,8 @@ void PixItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
                     QWidget *)
 {
     painter->drawPixmap(-pix.width() / 2, -pix.height() / 2, pix);
+    QRectF rc(-pix.width() / 2, -pix.height() / 2, pix.width(), pix.height());
+    painter->drawRect(rc);
 }
 
 //鼠标点击事件  局部缩放
@@ -73,7 +75,7 @@ void PixItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     {
         s = pow(1 / 1.1, -m_scaleValue);      //缩小
     }
-    //qDebug() << "mousePressEvent: s=" << s;
+    qDebug() << "mousePressEvent: s =" << s << ", BoundingRect =" << boundingRect() << ", startPos =" << m_startPos;
     setScale(s);
 }
 
@@ -82,6 +84,16 @@ void PixItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if(m_isMove)
     {
         QPointF point = event->pos() - m_startPos;
+//        QRectF brect = boundingRect();
+//        if(point.rx() < brect.left())
+//            point.setX(brect.left());
+//        if(point.rx() > brect.right())
+//            point.setX(brect.right());
+//        if(point.ry() < brect.top())
+//            point.setY(brect.top());
+//        if(point.ry() > brect.bottom())
+//            point.setY(brect.bottom());
+
         moveBy(point.x(), point.y());
     }
 }
@@ -119,7 +131,7 @@ void PixItem::wheelEvent(QGraphicsSceneWheelEvent *event)
     {
         s = pow(1 / 1.1, -m_scaleValue);      //缩小
     }
-    //qDebug() << "wheelEvent: s=" << s;
+    qDebug() << "wheelEvent: s=" << s << ", m_scaleValue = " << m_scaleValue;
     setScale(s);
     setTransformOriginPoint(event->pos().x(), event->pos().y());
 }
@@ -142,7 +154,7 @@ void PixItem::setScaleValue(const int &scaleValue)
         s = pow(1 / 1.1, -m_scaleValue);      //缩小
     }
 
-    //qDebug() << "setScaleValue:" << s;
+    qDebug() << "setScaleValue:" << s;
     setScale(s);
 }
 
@@ -152,7 +164,7 @@ void PixItem::setZoomState(const int &zoomState)
     if (m_zoomState == RESET)
     {
         m_scaleValue = 0;
-        //qDebug() << "setZoomState:" << 1;
+        qDebug() << "setZoomState:" << 1;
         setScale(1);
         setTransformOriginPoint(0, 0);
     }
@@ -200,26 +212,26 @@ void MyGraphicsView::scaling(qreal scaleFactor)
     scale(scaleFactor,scaleFactor);
 }
 
-void MyGraphicsView::mousePressEvent(QMouseEvent *event)
-{
-    m_startPos = event->pos();
-    m_isMove = true;
-}
+//void MyGraphicsView::mousePressEvent(QMouseEvent *event)
+//{
+//    m_startPos = event->pos();
+//    m_isMove = true;
+//}
 
-void MyGraphicsView::mouseMoveEvent(QMouseEvent *event)
-{
-    if(m_isMove)
-    {
-        QPointF point = event->pos() - m_startPos;
-        //moveBy(point.x(), point.y());
-        move(point.x(), point.y());
-    }
-}
+//void MyGraphicsView::mouseMoveEvent(QMouseEvent *event)
+//{
+//    if(m_isMove)
+//    {
+//        QPointF point = event->pos() - m_startPos;
+//        //moveBy(point.x(), point.y());
+//        move(point.x(), point.y());
+//    }
+//}
 
-void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event)
-{
-    m_isMove = false;
-}
+//void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event)
+//{
+//    m_isMove = false;
+//}
 
 void MyGraphicsView::wheelEvent(QWheelEvent *event)
 {
