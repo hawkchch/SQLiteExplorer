@@ -125,6 +125,8 @@ public:
     // 获取指定表的列名称
     bool GetColumnNames(const string& tableName, vector<string>& colNames);
 
+    bool GetIndexNames(const string& name, const string& tableName, vector<string>& colNames);
+
     // 执行sql查询,返回错误信息
     string ExecuteCmd(const string& sql, table_content& table, cell_content& headers);
 

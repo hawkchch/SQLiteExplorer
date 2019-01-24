@@ -247,6 +247,10 @@ void MainWindow::onVacuumActionTriggered()
     }
 }
 
+#define PathRole    Qt::UserRole+1
+#define LevelRole   Qt::UserRole+2
+#define TypeRole    Qt::UserRole+3
+
 bool MainWindow::openDatabaseFile(const QString &path)
 {
     CSQLite3DB *pSqlite = new CSQLite3DB(path.toStdString());
@@ -255,8 +259,11 @@ bool MainWindow::openDatabaseFile(const QString &path)
 
     QFileInfo fi(path);
 
+    // 顶层
     QStandardItem* root = new QStandardItem(QIcon(":/tableview/ui/db.png"), fi.baseName());
-    root->setData(path, Qt::UserRole+1);
+    root->setData(path, PathRole);      // Path
+    root->setData(1, LevelRole);        // 1,2,3
+    root->setData("db", TypeRole);      // db, table, index, trigger, view, freelist
 
     m_pTreeViewModel->appendRow(root);
 
@@ -309,15 +316,23 @@ bool MainWindow::openDatabaseFile(const QString &path)
         const QStringList& idxList = it.value();
         const QStringList& triggerList = mapTrigger[tblname];
         QStandardItem* item = new QStandardItem(QIcon(":/tableview/ui/table.png"), tblname);
+        item->setData(2, LevelRole);
+        item->setData("table", TypeRole);
 
         foreach(QString s, idxList)
         {
-            item->appendRow(new QStandardItem(QIcon(":/tableview/ui/index.jpg"), s));
+            QStandardItem* indexItem = new QStandardItem(QIcon(":/tableview/ui/index.jpg"), s);
+            indexItem->setData(3, LevelRole);
+            indexItem->setData("index", TypeRole);
+            item->appendRow(indexItem);
         }
 
         foreach(QString s, triggerList)
         {
-            item->appendRow(new QStandardItem(QIcon(":/tableview/ui/trigger.png"), s));
+            QStandardItem* triggerItem = new QStandardItem(QIcon(":/tableview/ui/trigger.png"), s);
+            triggerItem->setData(3, LevelRole);
+            triggerItem->setData("trigger", TypeRole);
+            item->appendRow(triggerItem);
         }
 
         root->appendRow(item);
@@ -325,7 +340,10 @@ bool MainWindow::openDatabaseFile(const QString &path)
 
     foreach(QString s, listView)
     {
-        root->appendRow(new QStandardItem(QIcon(":/tableview/ui/view.png"), s));
+        QStandardItem* viewItem = new QStandardItem(QIcon(":/tableview/ui/view.png"), s);
+        viewItem->setData(2, LevelRole);
+        viewItem->setData("view", TypeRole);
+        root->appendRow(viewItem);
     }
 
     m_pTreeView->expand(root->index());
@@ -334,10 +352,29 @@ bool MainWindow::openDatabaseFile(const QString &path)
 
 void MainWindow::OnTreeViewClick(const QModelIndex& index)
 {
-    QString tableName = index.data().toString();
-    const QModelIndex& parent = index.parent();
-    QString path = parent.data(Qt::UserRole+1).toString();
+    int level = index.data(LevelRole).toInt();
+    QString path, name, tableName, type;
+
+    type = index.data(TypeRole).toString();
+    if(level == 2)
+    {
+        path = index.parent().data(PathRole).toString();
+        name = index.data().toString();
+        tableName = name;
+    }
+    else if (level == 3)
+    {
+        path = index.parent().parent().data(PathRole).toString();
+        name = index.data().toString();
+        tableName = index.parent().data().toString();
+    }
+    else
+    {
+        return;
+    }
+
     auto it = m_mapSqlite3DBs.find(path);
+    qDebug() << "OnTreeViewClick tableName =" << tableName << ", PathName =" << path;
     if (it != m_mapSqlite3DBs.end())
     {
         CSQLite3DB* pSqlite = it.value();
@@ -401,15 +438,15 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
 
         // Init Hex Window
-        m_pHexWindow->SetTableName(tableName);
+        m_pHexWindow->SetTableName(name, tableName, type);
 
         //vector<int> pageids = pSqlite->GetAllLeafPageIds(tableName.toStdString());
         //m_pHexWindow->SetPageNos(pageids);
 
-        vector<pair<int, PageType>> pages = pSqlite->GetAllPageIdsAndType(tableName.toStdString());
+        vector<pair<int, PageType>> pages = pSqlite->GetAllPageIdsAndType(name.toStdString());
         m_pHexWindow->SetPageNosAndType(pages);
 
-        sql = QString("SELECT * FROM SQLITE_MASTER WHERE tbl_name='%1'").arg(tableName);
+        sql = QString("SELECT * FROM SQLITE_MASTER WHERE name='%1'").arg(name);
 
         pSqlite->ExecuteCmd(sql.toStdString(), tb, cc);
         while(!tb.empty())
@@ -421,7 +458,6 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         }
 
         m_pDDL->setText(sqls);
-
 
         QString getAllData = "SELECT * FROM " + tableName;
         emit signalSQLiteQuery(getAllData);
@@ -454,8 +490,8 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
             if(info.ncell>0)
             {
                 int ncell = info.ncell;
-                if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
-                    ncell += 1;
+//                if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
+//                    ncell += 1;
 
                 scell = QString(" ncell %1").arg(ncell);
             }

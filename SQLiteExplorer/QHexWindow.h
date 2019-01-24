@@ -27,7 +27,7 @@ public:
 
     void SetPageNos(const vector<int>& pgnos);
     void SetPageNosAndType(const vector<pair<int, PageType>>& pgs);
-    void SetTableName(const QString& tableName);
+    void SetTableName(const QString& name, const QString& tableName, const QString& type);
 
 public slots:
     void onPageIdSelect(int pgno, PageType type);
@@ -55,6 +55,8 @@ private:
     CSQLite3DB* m_pCurSQLite3DB;
 
     QString m_curTableName;
+    QString m_curName;
+
     QStringList m_tableHeaders;
     vector<ContentArea> m_payloadArea;
 

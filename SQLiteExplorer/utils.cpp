@@ -369,9 +369,33 @@ string wide_to_utf8(const wchar_t* pText)
     delete []buf;
     return ret;    
 }
+#endif
 
+int StrPos(const string& text, unsigned int start, const string& needle)
+{
+    size_t len = text.length();
+    if (start >= len) {
+        return -1;
+    }
+    if (needle == "") { //空字符串
+        return -1;
+    }
+    size_t len2 = needle.length();
+    for(unsigned int i=start; i<len; ++i) {
+        unsigned int j;
+        for(j=0; j<len2 && (i+j) < len; ++j) {
+            if (text[i+j] != needle[j]) {
+                break;
+            }
+        }
+        if (j == len2) {
+            return i;
+        }
+    }
+    return -1;
+}
 
-vector<std::string> StrSplit(const std::string &src, const std::string &split)
+vector<string> StrSplit(const string &src, const string &split)
 {
     vector<string> val;
     string cs = src;
@@ -396,4 +420,3 @@ vector<std::string> StrSplit(const std::string &src, const std::string &split)
     return val;
 }
 
-#endif

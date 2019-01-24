@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef __UTILS_H__
+#define __UTILS_H__
 #include <string>
 #include <vector>
 
@@ -25,8 +26,8 @@ int64_t StrToInt64(const char* str);
 string StrUpper(const string& text);
 string StrLower(const string& text);
 
-
-vector<string> StrSplit( const string& src, const string& split );
+int StrPos(const string& text, unsigned int start, const string& needle);
+vector<string> StrSplit(const string& src, const string& split);
 
 
 	/*!
@@ -54,3 +55,5 @@ vector<string> StrSplit( const string& src, const string& split );
     @return UTF8字符串
     */
     string wide_to_utf8(const wchar_t* pText);
+
+#endif

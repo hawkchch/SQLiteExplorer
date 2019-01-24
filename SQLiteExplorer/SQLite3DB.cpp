@@ -23,6 +23,8 @@
 #include "SQLite3DB.h"
 #include <algorithm>
 #include <QDebug>
+#include "utils.h"
+
 /* Print a line of decode output showing a 4-byte integer.
 */
 static int decode_number(unsigned char *aData,      /* Content being decoded */
@@ -665,6 +667,46 @@ bool CSQLite3DB::GetColumnNames(const string& tableName, vector<string>& colName
 
         bGetColNamesIsOk = true;
     }
+    return bGetColNamesIsOk;
+}
+
+bool CSQLite3DB::GetIndexNames(const string &name, const string &tableName, vector<string> &colNames)
+{
+    bool bGetColNamesIsOk = false;
+    if(tableName.empty())
+    {
+        return bGetColNamesIsOk;
+    }
+
+    string sql = "SELECT type,sql,rootpage FROM sqlite_master WHERE name='" + name + "' AND tbl_name='" + tableName + "'";
+    try
+    {
+        CppSQLite3Query q = execQuery(sql.c_str());
+        if(!q.eof())
+        {
+            string type = q.getStringField(0);
+            string s = q.getStringField(1);
+            int rootpage = q.getIntField(2);
+            size_t start = s.find('(');
+            size_t end = s.find(')');
+            string sub = s.substr(start+1, end-start-1);
+            string find = ",";
+            vector<string> vs = StrSplit(sub, find);
+            for(auto it=vs.begin(); it!=vs.end(); it++)
+            {
+                string col = *it;
+                col = col.substr(0, col.find(' '));
+                colNames.push_back(col);
+
+            }
+            bGetColNamesIsOk = true;
+        }
+    }
+    catch(CppSQLite3Exception& e)
+    {
+
+    }
+
     return bGetColNamesIsOk;
 }
 
