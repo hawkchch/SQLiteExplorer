@@ -26,10 +26,11 @@ public:
     ~QHexWindow();
 
     void SetPageNos(const vector<int>& pgnos);
+    void SetPageNosAndType(const vector<pair<int, PageType>>& pgs);
     void SetTableName(const QString& tableName);
 
 public slots:
-    void onPageIdSelect(int pgno);
+    void onPageIdSelect(int pgno, PageType type);
     void onComboxChanged(const QString& item);
     void onPrevBtnClicked();
     void onNextBtnClicked();
@@ -56,6 +57,8 @@ private:
     QString m_curTableName;
     QStringList m_tableHeaders;
     vector<ContentArea> m_payloadArea;
+
+    QMap<PageType, QString> m_pageTypeName;
 };
 
 #endif // QHEXWINDOW_H

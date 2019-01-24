@@ -108,7 +108,7 @@ public:
     vector<pair<int, PageType> > GetAllPageIdsAndType(const string &tableName);
 
     // 获取指定页原始内容
-    string LoadPage(int pgno);
+    string LoadPage(int pgno, bool decode = true);
 
     // 获取指定页的记录数量
     int GetCellCounts(int pgno);
@@ -209,7 +209,7 @@ public:
     ~CSQLite3Page();
 
     // 获取指定页的原始数据
-    string LoadPage(int pgno);
+    string LoadPage(int pgno, bool decode = true);
 
     // 获取指定页的类型
     int GetPageType(int pgno);
@@ -287,6 +287,7 @@ public:
     */
     bool DescribeContent();
 
+    int GetLeftChild(){return m_leftChild;}
     i64 GetRowid(){return m_rowid;}
 
 private:

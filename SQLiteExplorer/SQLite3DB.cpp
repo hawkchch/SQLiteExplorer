@@ -22,7 +22,7 @@
 
 #include "SQLite3DB.h"
 #include <algorithm>
-
+#include <QDebug>
 /* Print a line of decode output showing a 4-byte integer.
 */
 static int decode_number(unsigned char *aData,      /* Content being decoded */
@@ -169,9 +169,9 @@ vector<pair<int, PageType> > CSQLite3DB::GetAllPageIdsAndType(const string &tabl
     return ids;
 }
 
-std::string CSQLite3DB::LoadPage( int pgno )
+std::string CSQLite3DB::LoadPage( int pgno, bool decode )
 {
-    return m_pSqlite3Page->LoadPage(pgno);
+    return m_pSqlite3Page->LoadPage(pgno, decode);
 }
 
 int CSQLite3DB::GetPageSize()
@@ -683,7 +683,7 @@ CSQLite3Page::~CSQLite3Page()
 
 }
 
-string CSQLite3Page::LoadPage(int pgno)
+string CSQLite3Page::LoadPage(int pgno, bool decode)
 {
     if (pgno == m_pgno)
     {
@@ -697,7 +697,10 @@ string CSQLite3Page::LoadPage(int pgno)
         const char* data = (const char*)m_pParent->FileRead(ofst, m_pParent->m_pagesize);
         m_pageRawContent.assign(data, m_pParent->m_pagesize);
         m_pgno = pgno;
-        DecodePage();
+        if(decode)
+        {
+            DecodePage();
+        }
     }
 
     return m_pageRawContent;
@@ -893,6 +896,8 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
     i64 nDesc = 0;
     int n = 0;
 
+    qDebug() << "DescribeCell cType =" << cType << " CellContent =" << a;
+
     m_datas.clear();
     i = 0;
     m_cType = cType;
@@ -940,12 +945,17 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
     if(cType!=5 ){
         nDesc += DescribeContent();
     }
+    else
+    {
+
+    }
     //*pzDesc = zDesc;
     //return m_nLocal+n;
 }
 
 bool CSQLite3Payload::DescribeContent()
 {
+    qDebug() << "m_ctype =" << m_cType << " DescribeContent =" << m_rawContent.c_str();
     int n;
     i64 i, x, v;
     const unsigned char *pData;
