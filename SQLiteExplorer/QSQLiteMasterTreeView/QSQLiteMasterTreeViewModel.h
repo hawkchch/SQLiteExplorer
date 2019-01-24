@@ -3,12 +3,12 @@
 
 #include <QAbstractItemModel>
 
-class QSQLiteTablesTreeViewModel : public QAbstractItemModel
+class QSQLiteMasterTreeViewModel : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
-    explicit QSQLiteTablesTreeViewModel(QObject *parent = 0);
+    explicit QSQLiteMasterTreeViewModel(QObject *parent = 0);
 
     // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;

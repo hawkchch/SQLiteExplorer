@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     // Init QTreeView
-    m_pTreeView = new QSQLiteTablesTreeView(this);
+    m_pTreeView = new QSQLiteMasterTreeView(this);
     m_pTreeViewModel = new QStandardItemModel(m_pTreeView);
     m_pTreeView->setModel(m_pTreeViewModel);
     m_pTreeView->setHeaderHidden(true); // 隐藏表头

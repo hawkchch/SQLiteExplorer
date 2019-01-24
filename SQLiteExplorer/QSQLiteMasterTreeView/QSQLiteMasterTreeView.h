@@ -5,7 +5,7 @@
 #include <QTreeView>
 
 
-class QSQLiteTablesTreeView : public QTreeView
+class QSQLiteMasterTreeView : public QTreeView
 {
     Q_OBJECT
 
@@ -22,7 +22,7 @@ class QSQLiteTablesTreeView : public QTreeView
     };
 
 public:
-    QSQLiteTablesTreeView(QWidget *parent = 0);
+    QSQLiteMasterTreeView(QWidget *parent = 0);
 
 //    void InsertItem(QString dbPath, ItemType type, QString name, QString tableName);
 //    void ClearItem(QString dbPath);

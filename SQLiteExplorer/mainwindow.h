@@ -25,7 +25,7 @@
 #include <QTimerEvent>
 
 #include "QHexWindow.h"
-#include "QSQLiteTablesTreeView.h"
+#include "QSQLiteMasterTreeView.h"
 #include "SQLite3DB.h"
 
 namespace Ui {
@@ -79,7 +79,7 @@ private:
 
 
     // QTreeView at left
-    QSQLiteTablesTreeView* m_pTreeView;
+    QSQLiteMasterTreeView* m_pTreeView;
     QStandardItemModel* m_pTreeViewModel;
 
     // QTabWidget with sub widget

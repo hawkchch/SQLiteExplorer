@@ -141,6 +141,34 @@ vector<int> CSQLite3DB::GetAllLeafPageIds( const string& tableName )
     return ids;
 }
 
+vector<pair<int, PageType> > CSQLite3DB::GetAllPageIdsAndType(const string &tableName)
+{
+    LoadSqliteMaster();
+    m_pageUsageInfo.clear();
+
+    vector<pair<int, PageType>> ids;
+    string name = StrLower(tableName);
+    map<string, TableSchema>::iterator it = m_mapTableSchema.find(name);
+    if (it != m_mapTableSchema.end())
+    {
+        PageUsageBtree(it->second.rootpage, 0, 0, name.c_str());
+    }
+    else if (name == "sqlite_master")
+    {
+        PageUsageBtree(1, 0, 0, name.c_str());
+    }
+
+    for (vector<PageUsageInfo>::iterator it=m_pageUsageInfo.begin();
+        it != m_pageUsageInfo.end();
+        ++ it)
+    {
+        ids.push_back(make_pair(it->pgno, it->type));
+    }
+
+    std::sort(ids.begin(), ids.end());
+    return ids;
+}
+
 std::string CSQLite3DB::LoadPage( int pgno )
 {
     return m_pSqlite3Page->LoadPage(pgno);

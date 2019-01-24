@@ -105,6 +105,7 @@ public:
 
     // 获取所有叶子页id
     vector<int> GetAllLeafPageIds(const string& tableName);
+    vector<pair<int, PageType> > GetAllPageIdsAndType(const string &tableName);
 
     // 获取指定页原始内容
     string LoadPage(int pgno);
