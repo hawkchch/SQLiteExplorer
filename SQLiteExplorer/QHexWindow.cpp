@@ -310,15 +310,14 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
         vector<int> pkIdx;
         m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
 
-        QString pkFiledNames;
-        for(int i=0; i<pkFiledName.size(); i++)
-        {
-            pkFiledNames += QString::fromStdString(pkFiledName[i]) + ",";
-        }
-        qDebug() << m_curTableName << " IndexInterior PK Field =" << pkFiledNames;
-
         QString pkName = "Rowid";
         if(pkFiledName.size() == 1) pkName = QString::fromStdString(pkFiledName[0]);
+        // 当主键和索引列名称一样时，取pkName为Rowid
+        if(headers.size() == 1)
+        {
+            if(headers[0] == pkName) pkName = "Rowid";
+        }
+        else if(headers.empty()) pkName = "Rowid";
 
         bool setHeaders = false;
         if(headers.size() > 0)
@@ -396,16 +395,15 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
         vector<int> pkIdx;
         m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
 
-        QString pkFiledNames;
-        for(int i=0; i<pkFiledName.size(); i++)
-        {
-            pkFiledNames += QString::fromStdString(pkFiledName[i]) + ",";
-        }
-        qDebug() << "IndexInterior PK Field =" << pkFiledNames;
-
         // 对应主键名称
         QString pkName = "Rowid";
         if(pkFiledName.size() == 1) pkName = QString::fromStdString(pkFiledName[0]);
+        // 当主键和索引列名称一样时，取pkName为Rowid
+        if(headers.size() == 1)
+        {
+            if(headers[0] == pkName) pkName = "Rowid";
+        }
+        else if(headers.empty()) pkName = "Rowid";
 
         bool setHeaders = false;
         if(headers.size() > 0)

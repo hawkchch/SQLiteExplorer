@@ -452,14 +452,23 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
             vector<pair<int, PageType>> pages = m_pCurSQLite3DB->GetAllPageIdsAndType(name.toStdString());
             m_pHexWindow->SetPageNosAndType(pages);
 
-            sql = QString("SELECT * FROM SQLITE_MASTER WHERE name='%1'").arg(name);
+            if(type == "table")
+                sql = QString("SELECT * FROM SQLITE_MASTER WHERE tbl_name='%1'").arg(tableName);
+            else
+                sql = QString("SELECT * FROM SQLITE_MASTER WHERE name='%1'").arg(name);
             // Init DDL Window
+            tb.clear();
+            cc.clear();
             m_pCurSQLite3DB->ExecuteCmd(sql.toStdString(), tb, cc);
             while(!tb.empty())
             {
                 cell_content cc = tb.front();
                 tb.pop_front();
-                sqls += QString::fromStdString(cc[4]);
+                if(cc[4].size() > 0)
+                    sqls += QString::fromStdString(cc[4]);
+                else
+                    sqls += QString::fromStdString("--" + cc[1]);
+
                 sqls += "\n\n\n";
             }
             m_pDDL->setText(sqls);
