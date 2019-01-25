@@ -31,6 +31,7 @@ public:
 
 public slots:
     void onPageIdSelect(int pgno, PageType type);
+    void onPageTypeChanged(const QString& item);
     void onComboxChanged(const QString& item);
     void onPrevBtnClicked();
     void onNextBtnClicked();
@@ -61,6 +62,7 @@ private:
     vector<ContentArea> m_payloadArea;
 
     QMap<PageType, QString> m_pageTypeName;
+    QStringList m_pageNoAndTypes;
 };
 
 #endif // QHEXWINDOW_H

@@ -42,6 +42,9 @@
        <number>0</number>
       </property>
       <item>
+       <widget class="QComboBox" name="comboBoxPageType"/>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButtonFirst">
         <property name="maximumSize">
          <size>

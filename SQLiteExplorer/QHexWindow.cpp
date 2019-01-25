@@ -5,6 +5,9 @@
 #include <QDebug>
 #include <QTimer>
 
+#include <set>
+using std::set;
+
 QHexWindow::QHexWindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::QHexWindow)
@@ -42,6 +45,7 @@ QHexWindow::QHexWindow(QWidget *parent) :
         m_pParent = pMainWindow;
     }
 
+    connect(ui->comboBoxPageType, SIGNAL(currentIndexChanged(QString)), this, SLOT(onPageTypeChanged(QString)));
     connect(ui->comboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(onComboxChanged(QString)));
 
     connect(ui->pushButtonPrev, SIGNAL(clicked(bool)), this, SLOT(onPrevBtnClicked()));
@@ -102,17 +106,29 @@ void QHexWindow::SetPageNosAndType(const vector<pair<int, PageType> > &pgs)
     }
 
     ui->comboBox->clear();
-    QStringList ids;
+    ui->comboBoxPageType->clear();
+    m_pageNoAndTypes.clear();
+
+    set<PageType> pageTypes;
     for(auto it=pgs.begin(); it!=pgs.end(); ++it)
     {
-        ids.push_back(QString("%1/%2").arg(it->first).arg(m_pageTypeName[it->second]));
+        m_pageNoAndTypes.push_back(QString("%1/%2").arg(it->first).arg(m_pageTypeName[it->second]));
+        pageTypes.insert(it->second);
     }
     // 清空TableWidget中内容
     m_pTableWdiget->clear();
     m_pTableWdiget->setColumnCount(0);
 
-    ui->comboBox->addItems(ids);
+    ui->comboBox->addItems(m_pageNoAndTypes);
     ui->comboBox->setCurrentIndex(0);
+
+    QStringList pts;
+    pts.push_back("AllPageType");
+    for(auto it=pageTypes.begin(); it!=pageTypes.end(); it++)
+    {
+        pts.push_back(m_pageTypeName[*it]);
+    }
+    ui->comboBoxPageType->addItems(pts);
 }
 
 void QHexWindow::SetTableName(const QString &name, const QString &tableName, const QString &type)
@@ -401,6 +417,29 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
     }
 
     setPushBtnStats();
+}
+
+void QHexWindow::onPageTypeChanged(const QString &pageType)
+{
+    if(pageType == "AllPageType")
+    {
+        ui->comboBox->clear();
+        ui->comboBox->addItems(m_pageNoAndTypes);
+    }
+    else
+    {
+        QStringList list;
+        foreach (QString pageNoAndType, m_pageNoAndTypes)
+        {
+            if(pageNoAndType.contains(pageType))
+            {
+                list.push_back(pageNoAndType);
+            }
+        }
+
+        ui->comboBox->clear();
+        ui->comboBox->addItems(list);
+    }
 }
 
 void QHexWindow::onComboxChanged(const QString &item)
