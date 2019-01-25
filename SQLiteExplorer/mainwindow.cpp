@@ -266,13 +266,6 @@ bool MainWindow::openDatabaseFile(const QString &path)
     root->setData("db", TypeRole);      // db, table, index, trigger, view, freelist
     m_pTreeViewModel->appendRow(root);
 
-    // 设置自由页
-    QStandardItem* freeListItem = new QStandardItem(QIcon(":/tableview/ui/freelist.png"), "freelist");
-    freeListItem->setData(2, LevelRole);
-    freeListItem->setData("freelist", TypeRole);
-    root->appendRow(freeListItem);
-
-
     table_content tb;
     cell_content hdr;
     QString errmsg = QString::fromStdString(pSqlite->ExecuteCmd("select type, name, tbl_name from sqlite_master order by tbl_name, name", tb, hdr));
@@ -350,6 +343,12 @@ bool MainWindow::openDatabaseFile(const QString &path)
         viewItem->setData("view", TypeRole);
         root->appendRow(viewItem);
     }
+
+    // 设置自由页
+    QStandardItem* freeListItem = new QStandardItem(QIcon(":/tableview/ui/freelist.png"), "freelist");
+    freeListItem->setData(2, LevelRole);
+    freeListItem->setData("freelist", TypeRole);
+    root->appendRow(freeListItem);
 
     m_pTreeView->expand(root->index());
     return true;
@@ -445,11 +444,11 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
         // Init Hex Window
         m_pHexWindow->SetTableName(name, tableName, type);
+        vector<pair<int, PageType>> pages = m_pCurSQLite3DB->GetAllPageIdsAndType(name.toStdString());
         vector<PageUsageInfo> infos = m_pCurSQLite3DB->GetPageUsageInfos(type == "freelist");
 
         if(type != "freelist")
         {
-            vector<pair<int, PageType>> pages = m_pCurSQLite3DB->GetAllPageIdsAndType(name.toStdString());
             m_pHexWindow->SetPageNosAndType(pages);
 
             if(type == "table")
@@ -484,8 +483,6 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
             std::sort(pages.begin(), pages.end());
             m_pHexWindow->SetPageNosAndType(pages);
         }
-
-
 
         // Init Data Window
         if(type != "freelist")
@@ -522,8 +519,8 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
             if(info.ncell>0)
             {
                 int ncell = info.ncell;
-//                if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
-//                    ncell += 1;
+                if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
+                    ncell += 1;
                 scell = QString(" ncell %1").arg(ncell);
             }
 
