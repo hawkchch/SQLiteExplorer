@@ -195,7 +195,7 @@ string CSQLite3DB::ExecuteCmd(const string& sql, table_content& table , cell_con
     return errmsg;
 }
 
-bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, string& pkFieldName, string &pkType, int& pkIdx)
+bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, vector<string> &pkFieldName, vector<string> &pkType, vector<int> &pkIdx)
 {
     bool bGetPkIsOk = false;
     if(tableName.empty())
@@ -204,7 +204,6 @@ bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, string& pkFieldName
     }
 
     bGetPkIsOk = true;
-    pkIdx = -1;
     table_content tb;
     if(GetTableInfo(tableName, tb))
     {
@@ -214,10 +213,9 @@ bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, string& pkFieldName
             tb.pop_front();
             if(cc[5] == "1") // pk
             {
-                pkIdx = StrToInt(cc[0].c_str());
-                pkFieldName = cc[1];
-                pkType = cc[2];
-                break;
+                pkIdx.push_back(StrToInt(cc[0].c_str()));
+                pkFieldName.push_back(cc[1]);
+                pkType.push_back(cc[2]);
             }
         }
     }
@@ -753,9 +751,8 @@ bool CSQLite3DB::GetIndexNames(const string &name, const string &tableName, vect
             for(auto it=vs.begin(); it!=vs.end(); it++)
             {
                 string col = *it;
-                col = col.substr(0, col.find(' '));
+                col = Trim(col, " ");
                 colNames.push_back(col);
-
             }
             bGetColNamesIsOk = true;
         }
@@ -997,7 +994,7 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
     i64 nDesc = 0;
     int n = 0;
 
-    qDebug() << "DescribeCell cType =" << cType << " CellContent =" << a;
+    //qDebug() << "DescribeCell cType =" << cType << " CellContent =" << a;
 
     m_datas.clear();
     i = 0;
@@ -1056,7 +1053,7 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
 
 bool CSQLite3Payload::DescribeContent()
 {
-    qDebug() << "m_ctype =" << m_cType << " DescribeContent =" << m_rawContent.c_str();
+    //qDebug() << "m_ctype =" << m_cType << " DescribeContent =" << m_rawContent.c_str();
     int n;
     i64 i, x, v;
     const unsigned char *pData;

@@ -152,6 +152,12 @@ void QHexWindow::SetTableName(const QString &name, const QString &tableName, con
     else if (type == "index")
     {
         m_pCurSQLite3DB->GetIndexNames(name.toStdString(), tableName.toStdString(), headers);
+        QString idxNames;
+        for(int i=0; i<headers.size(); i++)
+        {
+            idxNames += QString::fromStdString(headers[i]) + ",";
+        }
+        qDebug() << "Index Headers =" << idxNames;
     }
 
     for(auto it=headers.begin(); it!=headers.end(); ++it)
@@ -181,8 +187,8 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
         m_payloadArea = payloadArea;
         ContentArea& unusedArea = m_pCurSQLite3DB->m_pSqlite3Page->m_unusedArea;            // 未使用区域
 
-        document->highlightBackRange(pageHeaderArea.m_startAddr, pageHeaderArea.m_len, QColor(Qt::white));
-        document->highlightBackRange(cellidxArea.m_startAddr, cellidxArea.m_len, QColor(Qt::white));
+        document->highlightBackRange(pageHeaderArea.m_startAddr, pageHeaderArea.m_len, QColor(0x6A, 0x88, 0x82));
+        document->highlightBackRange(cellidxArea.m_startAddr, cellidxArea.m_len, QColor(0xE9, 0xFD, 0xF2));
         document->highlightBackRange(unusedArea.m_startAddr, unusedArea.m_len, QColor(0xFE, 0xE3, 0xBA));
 
         QColor p[3];
@@ -210,6 +216,10 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
     // 将该页中所有数据填充到m_pTableWdiget中
     if(type == PAGE_TYPE_TABLE_LEAF)
     {
+        vector<string> pkFiledName;
+        vector<string> pkType;
+        vector<int> pkIdx;
+        m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
         m_pTableWdiget->setColumnCount(m_tableHeaders.size());
         m_pTableWdiget->setHorizontalHeaderLabels(m_tableHeaders);
         m_pTableWdiget->setRowCount(m_payloadArea.size());
@@ -220,14 +230,9 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
             vector<SQLite3Variant> vars;
             m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
 
-            qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
+            //qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
 
-            string pkFiledName;
-            string pkType;
-            int pkIdx = -1;
             i64 rowid = m_pCurSQLite3DB->m_pSqlite3Payload->GetRowid();
-            m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
-
             for(size_t i=0; i<vars.size(); i++)
             {
                 SQLite3Variant& var = vars[i];
@@ -253,7 +258,7 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
                     break;
                 }
 
-                if(pkIdx == i && var.type == SQLITE_TYPE_NULL && StrUpper(pkType) == "INTEGER")
+                if(pkIdx.size() == 1 && pkIdx[0] == i && var.type == SQLITE_TYPE_NULL && StrUpper(pkType[0]) == "INTEGER")
                 {
                     val = QString("%1").arg(rowid);
                 }
@@ -266,8 +271,16 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
     else if(type == PAGE_TYPE_TABLE_INTERIOR)
     {
         m_pTableWdiget->setColumnCount(2);
+        vector<string> pkFiledName;
+        vector<string> pkType;
+        vector<int> pkIdx;
+        m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
+        QString pkName = "Rowid";
+        if(pkFiledName.size() == 1) pkName = QString::fromStdString(pkFiledName[0]);
+
+
         QStringList tableHeaders;
-        tableHeaders << "LeftChildPageNo" << "Rowid";
+        tableHeaders << "LeftChildPageNo" << pkName;
         m_pTableWdiget->setHorizontalHeaderLabels(tableHeaders);
         m_pTableWdiget->setRowCount(m_payloadArea.size());
 
@@ -292,20 +305,31 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
     else if(type == PAGE_TYPE_INDEX_INTERIOR)
     {
         QStringList headers = m_tableHeaders;
-        headers.push_front("LeftChildPageNo");
-
-        string pkFiledName;
-        string pkType;
-        int pkIdx = -1;
+        vector<string> pkFiledName;
+        vector<string> pkType;
+        vector<int> pkIdx;
         m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
 
-        qDebug() << "IndexInterior PK Field =" << pkFiledName.c_str();
+        QString pkFiledNames;
+        for(int i=0; i<pkFiledName.size(); i++)
+        {
+            pkFiledNames += QString::fromStdString(pkFiledName[i]) + ",";
+        }
+        qDebug() << m_curTableName << " IndexInterior PK Field =" << pkFiledNames;
 
-        // 对应主键名称
-        headers.push_back(QString::fromStdString(pkFiledName));
+        QString pkName = "Rowid";
+        if(pkFiledName.size() == 1) pkName = QString::fromStdString(pkFiledName[0]);
 
-        m_pTableWdiget->setColumnCount(headers.size());
-        m_pTableWdiget->setHorizontalHeaderLabels(headers);
+        bool setHeaders = false;
+        if(headers.size() > 0)
+        {
+            headers.push_front("LeftChildPageNo");
+            headers.push_back(pkName);
+            m_pTableWdiget->setColumnCount(headers.size());
+            m_pTableWdiget->setHorizontalHeaderLabels(headers);
+            setHeaders = true;
+        }
+
         m_pTableWdiget->setRowCount(m_payloadArea.size());
 
         for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
@@ -314,7 +338,20 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
             vector<SQLite3Variant> vars;
             m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
 
-            qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
+            //qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
+
+            if(!setHeaders)
+            {
+                headers.push_back("LeftChildPageNo");
+                for(size_t i=0; i<vars.size()-1; i++)
+                {
+                    headers.push_back(QString("%1").arg(i));
+                }
+                headers.push_back(pkName);
+                m_pTableWdiget->setColumnCount(headers.size());
+                m_pTableWdiget->setHorizontalHeaderLabels(headers);
+                setHeaders = true;
+            }
 
             int leftChild = m_pCurSQLite3DB->m_pSqlite3Payload->GetLeftChild();
             QTableWidgetItem *leftChildItem = new QTableWidgetItem();
@@ -354,18 +391,31 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
     else if(type == PAGE_TYPE_INDEX_LEAF)
     {
         QStringList headers = m_tableHeaders;
-        string pkFiledName;
-        string pkType;
-        int pkIdx = -1;
+        vector<string> pkFiledName;
+        vector<string> pkType;
+        vector<int> pkIdx;
         m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
 
-        qDebug() << "IndexLeaf PK Field =" << pkFiledName.c_str();
+        QString pkFiledNames;
+        for(int i=0; i<pkFiledName.size(); i++)
+        {
+            pkFiledNames += QString::fromStdString(pkFiledName[i]) + ",";
+        }
+        qDebug() << "IndexInterior PK Field =" << pkFiledNames;
 
         // 对应主键名称
-        headers.push_back(QString::fromStdString(pkFiledName));
+        QString pkName = "Rowid";
+        if(pkFiledName.size() == 1) pkName = QString::fromStdString(pkFiledName[0]);
 
-        m_pTableWdiget->setColumnCount(headers.size());
-        m_pTableWdiget->setHorizontalHeaderLabels(headers);
+        bool setHeaders = false;
+        if(headers.size() > 0)
+        {
+            headers.push_back(pkName);
+            m_pTableWdiget->setColumnCount(headers.size());
+            m_pTableWdiget->setHorizontalHeaderLabels(headers);
+            setHeaders = true;
+        }
+
         m_pTableWdiget->setRowCount(m_payloadArea.size());
 
         for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
@@ -374,7 +424,19 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
             vector<SQLite3Variant> vars;
             m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
 
-            qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
+            if(!setHeaders)
+            {
+                for(size_t i=0; i<vars.size()-1; i++)
+                {
+                    headers.push_back(QString("%1").arg(i));
+                }
+                headers.push_back(pkName);
+                m_pTableWdiget->setColumnCount(headers.size());
+                m_pTableWdiget->setHorizontalHeaderLabels(headers);
+                setHeaders = true;
+            }
+
+            //qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
             for(size_t i=0; i<vars.size(); i++)
             {
                 SQLite3Variant& var = vars[i];
@@ -418,8 +480,8 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
                                                  sLeafPageCounts,nLeafPageCounts,sLeafPageNos,nLeafPageNos,sUnused);
 
         document->beginMetadata();
-        document->highlightBackRange(sNextTrunkPageNo.m_startAddr, sNextTrunkPageNo.m_len, QColor(Qt::white));
-        document->highlightBackRange(sLeafPageCounts.m_startAddr, sLeafPageCounts.m_len, QColor(Qt::white));
+        document->highlightBackRange(sNextTrunkPageNo.m_startAddr, sNextTrunkPageNo.m_len, QColor(0x6A, 0x88, 0x82));
+        document->highlightBackRange(sLeafPageCounts.m_startAddr, sLeafPageCounts.m_len, QColor(0xE9, 0xFD, 0xF2));
         document->highlightBackRange(sUnused.m_startAddr, sUnused.m_len, QColor(0xFE, 0xE3, 0xBA));
 
         QColor p[3];

@@ -379,7 +379,7 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
     }
 
     auto it = m_mapSqlite3DBs.find(path);
-    qDebug() << "OnTreeViewClick tableName =" << tableName << ", PathName =" << path;
+    //qDebug() << "OnTreeViewClick tableName =" << tableName << ", PathName =" << path;
     if (it != m_mapSqlite3DBs.end())
     {
         m_pCurSQLite3DB = it.value();

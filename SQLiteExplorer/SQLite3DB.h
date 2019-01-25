@@ -130,7 +130,7 @@ public:
     string ExecuteCmd(const string& sql, table_content& table, cell_content& headers);
 
     // 获取指定表的主键相关信息
-    bool GetTablePrimaryKey(const string& tableName, string& pkFieldName, string& pkType, int& pkIdx);
+    bool GetTablePrimaryKey(const string& tableName, vector<string>& pkFieldName, vector<string>& pkType, vector<int>& pkIdx);
 
     // 获取表字段信息
     bool GetTableInfo(const string& tableName, table_content& tb);

@@ -56,4 +56,10 @@ vector<string> StrSplit(const string& src, const string& split);
     */
     string wide_to_utf8(const wchar_t* pText);
 
+    string TrimLeft(const string& text, const string& chars);
+
+    string TrimRight(const string& text, const string& chars);
+
+    string Trim(const string& text, const string& chars);
+
 #endif

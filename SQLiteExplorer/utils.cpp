@@ -420,3 +420,49 @@ vector<string> StrSplit(const string &src, const string &split)
     return val;
 }
 
+
+string TrimLeft(const string &text, const string &chars)
+{
+    const char* p = text.c_str();
+    const char* pc;
+    while(*p) {
+        pc = chars.c_str();
+        while(*pc) {
+            if (*pc == *p) {
+                break;
+            }
+            ++pc;
+        }
+        if (*pc) ++p;
+        else break;
+    }
+    return string(p);
+}
+
+string TrimRight(const string &text, const string &chars)
+{
+    if (text.empty()) return text;
+
+    const char* p = text.c_str();
+    const char* pc;
+    const char* q = p + (text.length()-1);
+    while(q >= p) {
+        pc = chars.c_str();
+        while(*pc) {
+            if (*pc == *q) {
+                break;
+            }
+            ++pc;
+        }
+        if (*pc) --q;
+        else break;
+    }
+    string r;
+    r.append(p, q-p+1);
+    return r;
+}
+
+string Trim(const string &text, const string &chars)
+{
+    return TrimRight(TrimLeft(text, chars),chars);
+}
