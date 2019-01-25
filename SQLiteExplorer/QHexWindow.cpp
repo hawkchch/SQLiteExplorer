@@ -173,7 +173,6 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
 
     // Bulk metadata management (paints only one time)
     document->beginMetadata();
-
     if(decode)
     {
         ContentArea& pageHeaderArea = m_pCurSQLite3DB->m_pSqlite3Page->m_pageHeaderArea;
@@ -205,210 +204,251 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
     {
         document->highlightBackRange(0, m_pCurSQLite3DB->GetPageSize(), QColor(Qt::white));
     }
-
     document->endMetadata();
 
 
     // 将该页中所有数据填充到m_pTableWdiget中
-    if(decode)
+    if(type == PAGE_TYPE_TABLE_LEAF)
     {
-        if(type == PAGE_TYPE_TABLE_LEAF)
+        m_pTableWdiget->setColumnCount(m_tableHeaders.size());
+        m_pTableWdiget->setHorizontalHeaderLabels(m_tableHeaders);
+        m_pTableWdiget->setRowCount(m_payloadArea.size());
+
+        for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
         {
-            m_pTableWdiget->setColumnCount(m_tableHeaders.size());
-            m_pTableWdiget->setHorizontalHeaderLabels(m_tableHeaders);
-            m_pTableWdiget->setRowCount(m_payloadArea.size());
+            int idx = it - m_payloadArea.begin();
+            vector<SQLite3Variant> vars;
+            m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
 
-            for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
-            {
-                int idx = it - m_payloadArea.begin();
-                vector<SQLite3Variant> vars;
-                m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
-
-                qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
-
-                string pkFiledName;
-                string pkType;
-                int pkIdx = -1;
-                i64 rowid = m_pCurSQLite3DB->m_pSqlite3Payload->GetRowid();
-                m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
-
-                for(size_t i=0; i<vars.size(); i++)
-                {
-                    SQLite3Variant& var = vars[i];
-                    QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
-                    QString val;
-                    switch (var.type) {
-                    case SQLITE_TYPE_INTEGER:
-                        val = QString("%1").arg(var.iVal);
-                        break;
-                    case SQLITE_TYPE_FLOAT:
-                        val = QString("%1").arg(var.lfVal);
-                        break;
-                    case SQLITE_TYPE_TEXT:
-                        val = QString::fromStdString(var.text);
-                        break;
-                    case SQLITE_TYPE_NULL:
-                        val = "(null)";
-                        break;
-                    case SQLITE_TYPE_BLOB:
-                        val = QString::fromStdString(var.text);
-                        break;
-                    default:
-                        break;
-                    }
-
-                    if(pkIdx == i && var.type == SQLITE_TYPE_NULL && StrUpper(pkType) == "INTEGER")
-                    {
-                        val = QString("%1").arg(rowid);
-                    }
-
-                    name->setText(val);//设置内容
-                    m_pTableWdiget->setItem(idx,i,name);//把这个Item加到第一行第二列中
-                }
-            }
-        }
-        else if(type == PAGE_TYPE_TABLE_INTERIOR)
-        {
-            m_pTableWdiget->setColumnCount(2);
-            QStringList tableHeaders;
-            tableHeaders << "LeftChildPageNo" << "Rowid";
-            m_pTableWdiget->setHorizontalHeaderLabels(tableHeaders);
-            m_pTableWdiget->setRowCount(m_payloadArea.size());
-
-            for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
-            {
-                int idx = it - m_payloadArea.begin();
-                vector<SQLite3Variant> vars;
-                m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
-
-                int leftChild = m_pCurSQLite3DB->m_pSqlite3Payload->GetLeftChild();
-                i64 rowid = m_pCurSQLite3DB->m_pSqlite3Payload->GetRowid();
-
-                QTableWidgetItem *name=new QTableWidgetItem();
-                name->setText(QString("%1").arg(leftChild));
-                m_pTableWdiget->setItem(idx,0,name);
-
-                name=new QTableWidgetItem();
-                name->setText(QString("%1").arg(rowid));
-                m_pTableWdiget->setItem(idx,1,name);
-            }
-        }
-        else if(type == PAGE_TYPE_INDEX_INTERIOR)
-        {
-            QStringList headers = m_tableHeaders;
-            headers.push_front("LeftChildPageNo");
+            qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
 
             string pkFiledName;
             string pkType;
             int pkIdx = -1;
+            i64 rowid = m_pCurSQLite3DB->m_pSqlite3Payload->GetRowid();
             m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
 
-            qDebug() << "IndexInterior PK Field =" << pkFiledName.c_str();
-
-            // 对应主键名称
-            headers.push_back(QString::fromStdString(pkFiledName));
-
-            m_pTableWdiget->setColumnCount(headers.size());
-            m_pTableWdiget->setHorizontalHeaderLabels(headers);
-            m_pTableWdiget->setRowCount(m_payloadArea.size());
-
-            for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
+            for(size_t i=0; i<vars.size(); i++)
             {
-                int idx = it - m_payloadArea.begin();
-                vector<SQLite3Variant> vars;
-                m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
-
-                qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
-
-                int leftChild = m_pCurSQLite3DB->m_pSqlite3Payload->GetLeftChild();
-                QTableWidgetItem *leftChildItem = new QTableWidgetItem();
-                leftChildItem->setText(QString("%1").arg(leftChild));//设置内容
-                m_pTableWdiget->setItem(idx,0,leftChildItem);
-
-                for(size_t i=0; i<vars.size(); i++)
-                {
-                    SQLite3Variant& var = vars[i];
-                    QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
-                    QString val;
-                    switch (var.type) {
-                    case SQLITE_TYPE_INTEGER:
-                        val = QString("%1").arg(var.iVal);
-                        break;
-                    case SQLITE_TYPE_FLOAT:
-                        val = QString("%1").arg(var.lfVal);
-                        break;
-                    case SQLITE_TYPE_TEXT:
-                        val = QString::fromStdString(var.text);
-                        break;
-                    case SQLITE_TYPE_NULL:
-                        val = "(null)";
-                        break;
-                    case SQLITE_TYPE_BLOB:
-                        val = QString::fromStdString(var.text);
-                        break;
-                    default:
-                        break;
-                    }
-
-                    name->setText(val);//设置内容
-                    m_pTableWdiget->setItem(idx,i+1,name);//把这个Item加到第一行第二列中
+                SQLite3Variant& var = vars[i];
+                QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
+                QString val;
+                switch (var.type) {
+                case SQLITE_TYPE_INTEGER:
+                    val = QString("%1").arg(var.iVal);
+                    break;
+                case SQLITE_TYPE_FLOAT:
+                    val = QString("%1").arg(var.lfVal);
+                    break;
+                case SQLITE_TYPE_TEXT:
+                    val = QString::fromStdString(var.text);
+                    break;
+                case SQLITE_TYPE_NULL:
+                    val = "(null)";
+                    break;
+                case SQLITE_TYPE_BLOB:
+                    val = QString::fromStdString(var.text);
+                    break;
+                default:
+                    break;
                 }
+
+                if(pkIdx == i && var.type == SQLITE_TYPE_NULL && StrUpper(pkType) == "INTEGER")
+                {
+                    val = QString("%1").arg(rowid);
+                }
+
+                name->setText(val);//设置内容
+                m_pTableWdiget->setItem(idx,i,name);//把这个Item加到第一行第二列中
             }
         }
-        else if(type == PAGE_TYPE_INDEX_LEAF)
+    }
+    else if(type == PAGE_TYPE_TABLE_INTERIOR)
+    {
+        m_pTableWdiget->setColumnCount(2);
+        QStringList tableHeaders;
+        tableHeaders << "LeftChildPageNo" << "Rowid";
+        m_pTableWdiget->setHorizontalHeaderLabels(tableHeaders);
+        m_pTableWdiget->setRowCount(m_payloadArea.size());
+
+        for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
         {
-            QStringList headers = m_tableHeaders;
-            string pkFiledName;
-            string pkType;
-            int pkIdx = -1;
-            m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
+            int idx = it - m_payloadArea.begin();
+            vector<SQLite3Variant> vars;
+            m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
 
-            qDebug() << "IndexLeaf PK Field =" << pkFiledName.c_str();
+            int leftChild = m_pCurSQLite3DB->m_pSqlite3Payload->GetLeftChild();
+            i64 rowid = m_pCurSQLite3DB->m_pSqlite3Payload->GetRowid();
 
-            // 对应主键名称
-            headers.push_back(QString::fromStdString(pkFiledName));
+            QTableWidgetItem *name=new QTableWidgetItem();
+            name->setText(QString("%1").arg(leftChild));
+            m_pTableWdiget->setItem(idx,0,name);
 
-            m_pTableWdiget->setColumnCount(headers.size());
-            m_pTableWdiget->setHorizontalHeaderLabels(headers);
-            m_pTableWdiget->setRowCount(m_payloadArea.size());
+            name=new QTableWidgetItem();
+            name->setText(QString("%1").arg(rowid));
+            m_pTableWdiget->setItem(idx,1,name);
+        }
+    }
+    else if(type == PAGE_TYPE_INDEX_INTERIOR)
+    {
+        QStringList headers = m_tableHeaders;
+        headers.push_front("LeftChildPageNo");
 
-            for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
+        string pkFiledName;
+        string pkType;
+        int pkIdx = -1;
+        m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
+
+        qDebug() << "IndexInterior PK Field =" << pkFiledName.c_str();
+
+        // 对应主键名称
+        headers.push_back(QString::fromStdString(pkFiledName));
+
+        m_pTableWdiget->setColumnCount(headers.size());
+        m_pTableWdiget->setHorizontalHeaderLabels(headers);
+        m_pTableWdiget->setRowCount(m_payloadArea.size());
+
+        for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
+        {
+            int idx = it - m_payloadArea.begin();
+            vector<SQLite3Variant> vars;
+            m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
+
+            qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
+
+            int leftChild = m_pCurSQLite3DB->m_pSqlite3Payload->GetLeftChild();
+            QTableWidgetItem *leftChildItem = new QTableWidgetItem();
+            leftChildItem->setText(QString("%1").arg(leftChild));//设置内容
+            m_pTableWdiget->setItem(idx,0,leftChildItem);
+
+            for(size_t i=0; i<vars.size(); i++)
             {
-                int idx = it - m_payloadArea.begin();
-                vector<SQLite3Variant> vars;
-                m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
-
-                qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
-                for(size_t i=0; i<vars.size(); i++)
-                {
-                    SQLite3Variant& var = vars[i];
-                    QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
-                    QString val;
-                    switch (var.type) {
-                    case SQLITE_TYPE_INTEGER:
-                        val = QString("%1").arg(var.iVal);
-                        break;
-                    case SQLITE_TYPE_FLOAT:
-                        val = QString("%1").arg(var.lfVal);
-                        break;
-                    case SQLITE_TYPE_TEXT:
-                        val = QString::fromStdString(var.text);
-                        break;
-                    case SQLITE_TYPE_NULL:
-                        val = "(null)";
-                        break;
-                    case SQLITE_TYPE_BLOB:
-                        val = QString::fromStdString(var.text);
-                        break;
-                    default:
-                        break;
-                    }
-
-                    name->setText(val);//设置内容
-                    m_pTableWdiget->setItem(idx,i,name);//把这个Item加到第一行第二列中
+                SQLite3Variant& var = vars[i];
+                QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
+                QString val;
+                switch (var.type) {
+                case SQLITE_TYPE_INTEGER:
+                    val = QString("%1").arg(var.iVal);
+                    break;
+                case SQLITE_TYPE_FLOAT:
+                    val = QString("%1").arg(var.lfVal);
+                    break;
+                case SQLITE_TYPE_TEXT:
+                    val = QString::fromStdString(var.text);
+                    break;
+                case SQLITE_TYPE_NULL:
+                    val = "(null)";
+                    break;
+                case SQLITE_TYPE_BLOB:
+                    val = QString::fromStdString(var.text);
+                    break;
+                default:
+                    break;
                 }
+
+                name->setText(val);//设置内容
+                m_pTableWdiget->setItem(idx,i+1,name);//把这个Item加到第一行第二列中
             }
         }
+    }
+    else if(type == PAGE_TYPE_INDEX_LEAF)
+    {
+        QStringList headers = m_tableHeaders;
+        string pkFiledName;
+        string pkType;
+        int pkIdx = -1;
+        m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx);
+
+        qDebug() << "IndexLeaf PK Field =" << pkFiledName.c_str();
+
+        // 对应主键名称
+        headers.push_back(QString::fromStdString(pkFiledName));
+
+        m_pTableWdiget->setColumnCount(headers.size());
+        m_pTableWdiget->setHorizontalHeaderLabels(headers);
+        m_pTableWdiget->setRowCount(m_payloadArea.size());
+
+        for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
+        {
+            int idx = it - m_payloadArea.begin();
+            vector<SQLite3Variant> vars;
+            m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
+
+            qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
+            for(size_t i=0; i<vars.size(); i++)
+            {
+                SQLite3Variant& var = vars[i];
+                QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
+                QString val;
+                switch (var.type) {
+                case SQLITE_TYPE_INTEGER:
+                    val = QString("%1").arg(var.iVal);
+                    break;
+                case SQLITE_TYPE_FLOAT:
+                    val = QString("%1").arg(var.lfVal);
+                    break;
+                case SQLITE_TYPE_TEXT:
+                    val = QString::fromStdString(var.text);
+                    break;
+                case SQLITE_TYPE_NULL:
+                    val = "(null)";
+                    break;
+                case SQLITE_TYPE_BLOB:
+                    val = QString::fromStdString(var.text);
+                    break;
+                default:
+                    break;
+                }
+
+                name->setText(val);//设置内容
+                m_pTableWdiget->setItem(idx,i,name);//把这个Item加到第一行第二列中
+            }
+        }
+    }
+    else if(type == PAGE_TYPE_FREELIST_TRUNK)
+    {
+        ContentArea sNextTrunkPageNo;
+        int nNextTrunkPageNo;
+        ContentArea sLeafPageCounts;
+        int nLeafPageCounts;
+        vector<ContentArea> sLeafPageNos;
+        vector<int> nLeafPageNos;
+        ContentArea sUnused;
+        m_pCurSQLite3DB->DecodeFreeListTrunkPage(pgno, sNextTrunkPageNo, nNextTrunkPageNo,
+                                                 sLeafPageCounts,nLeafPageCounts,sLeafPageNos,nLeafPageNos,sUnused);
+
+        document->beginMetadata();
+        document->highlightBackRange(sNextTrunkPageNo.m_startAddr, sNextTrunkPageNo.m_len, QColor(Qt::white));
+        document->highlightBackRange(sLeafPageCounts.m_startAddr, sLeafPageCounts.m_len, QColor(Qt::white));
+        document->highlightBackRange(sUnused.m_startAddr, sUnused.m_len, QColor(0xFE, 0xE3, 0xBA));
+
+        QColor p[3];
+        p[0].setRgb(0xC9, 0xFB, 0xB9);
+        p[1].setRgb(0x8F, 0xDD, 0x77);
+        p[2].setRgb(0x62, 0xC5, 0x44);
+
+        for(size_t i=0; i<sLeafPageNos.size(); ++i)
+        {
+            ContentArea& ca = sLeafPageNos[i];
+            document->highlightBackRange(ca.m_startAddr, ca.m_len, p[i%3]);
+        }
+        document->endMetadata();
+
+        m_pTableWdiget->setRowCount(nLeafPageNos.size());
+        m_pTableWdiget->setColumnCount(1);
+
+        QStringList headers;
+        headers << "FreelistLeafPageNo";
+        m_pTableWdiget->setHorizontalHeaderLabels(headers);
+
+        for(size_t i=0; i<nLeafPageNos.size(); ++i)
+        {
+            QTableWidgetItem *name=new QTableWidgetItem();
+            name->setText(QString("%1").arg(nLeafPageNos[i]));
+            m_pTableWdiget->setItem(i,0,name);
+        }
+
+        m_payloadArea = sLeafPageNos;
     }
     else
     {

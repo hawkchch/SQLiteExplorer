@@ -122,7 +122,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Init CentralWidget
     ui->centralWidget->layout()->addWidget(m_pSplitter);
 
-    onOpenActionTriggered();
+    //onOpenActionTriggered();
 
     setAcceptDrops(true);
 }
@@ -172,8 +172,8 @@ void MainWindow::onOpenActionTriggered()
     //options |= QFileDialog::DontUseNativeDialog;
     QString selectedFilter;
     //Sqlite Files(*.db *.sqlite)
-    //QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), "", tr("*.*"), &selectedFilter, options);
-    QString path = "D:\\git-project\\SQLiteExplorer\\MM.sqlite";
+    QString path = QFileDialog::getOpenFileName(this, tr("Open Sqlite Database file"), "", tr("*.*"), &selectedFilter, options);
+    //QString path = "D:\\git-project\\SQLiteExplorer\\MM.sqlite";
     if(path.length() > 0)
     {
         openDatabaseFile(path);
@@ -264,8 +264,13 @@ bool MainWindow::openDatabaseFile(const QString &path)
     root->setData(path, PathRole);      // Path
     root->setData(1, LevelRole);        // 1,2,3
     root->setData("db", TypeRole);      // db, table, index, trigger, view, freelist
-
     m_pTreeViewModel->appendRow(root);
+
+    // 设置自由页
+    QStandardItem* freeListItem = new QStandardItem(QIcon(":/tableview/ui/freelist.png"), "freelist");
+    freeListItem->setData(2, LevelRole);
+    freeListItem->setData("freelist", TypeRole);
+    root->appendRow(freeListItem);
 
 
     table_content tb;
@@ -377,11 +382,13 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
     qDebug() << "OnTreeViewClick tableName =" << tableName << ", PathName =" << path;
     if (it != m_mapSqlite3DBs.end())
     {
-        CSQLite3DB* pSqlite = it.value();
-        m_pCurSQLite3DB = pSqlite;
+        m_pCurSQLite3DB = it.value();
 
         QString sqls;
         QString sql;
+        table_content tb;
+        cell_content cc;
+
 
         // Init Database Window
         m_pDatabase->clear();
@@ -406,63 +413,79 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
         // Init Design Window
         m_pDesign->clear();
-        sql = QString("PRAGMA table_info(%1);").arg(tableName);
 
-        table_content tb;
-        cell_content cc;
-
-        string err = m_pCurSQLite3DB->ExecuteCmd(sql.toStdString(), tb, cc);
-
-        m_pDesign->setColumnCount(cc.size());
-        header.clear();
-
-        for(auto it=cc.begin(); it!=cc.end(); ++it)
+        if(type != "freelist")
         {
-            header.push_back(QString::fromStdString(*it));
-        }
+            sql = QString("PRAGMA table_info(%1);").arg(tableName);
+            string err = m_pCurSQLite3DB->ExecuteCmd(sql.toStdString(), tb, cc);
 
-        m_pDesign->setHorizontalHeaderLabels(header);
-        m_pDesign->setRowCount(tb.size());
-        for(size_t i=0; i<tb.size(); ++i)
-        {
-            const cell_content& cell = tb[i];
-            for(size_t j=0; j<cell.size(); ++j)
+            m_pDesign->setColumnCount(cc.size());
+            header.clear();
+
+            for(auto it=cc.begin(); it!=cc.end(); ++it)
             {
-                QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
-                name->setText(QString::fromStdString(cell[j]));//设置内容
-                m_pDesign->setItem(i,j,name);//把这个Item加到第一行第二列中
+                header.push_back(QString::fromStdString(*it));
             }
-        }
-        tb.clear();
-        cc.clear();
 
+            m_pDesign->setHorizontalHeaderLabels(header);
+            m_pDesign->setRowCount(tb.size());
+            for(size_t i=0; i<tb.size(); ++i)
+            {
+                const cell_content& cell = tb[i];
+                for(size_t j=0; j<cell.size(); ++j)
+                {
+                    QTableWidgetItem *name=new QTableWidgetItem();//创建一个Item
+                    name->setText(QString::fromStdString(cell[j]));//设置内容
+                    m_pDesign->setItem(i,j,name);//把这个Item加到第一行第二列中
+                }
+            }
+            tb.clear();
+            cc.clear();
+        }
 
         // Init Hex Window
         m_pHexWindow->SetTableName(name, tableName, type);
+        vector<PageUsageInfo> infos = m_pCurSQLite3DB->GetPageUsageInfos(type == "freelist");
 
-        //vector<int> pageids = pSqlite->GetAllLeafPageIds(tableName.toStdString());
-        //m_pHexWindow->SetPageNos(pageids);
-
-        vector<pair<int, PageType>> pages = pSqlite->GetAllPageIdsAndType(name.toStdString());
-        m_pHexWindow->SetPageNosAndType(pages);
-
-        sql = QString("SELECT * FROM SQLITE_MASTER WHERE name='%1'").arg(name);
-
-        pSqlite->ExecuteCmd(sql.toStdString(), tb, cc);
-        while(!tb.empty())
+        if(type != "freelist")
         {
-            cell_content cc = tb.front();
-            tb.pop_front();
-            sqls += QString::fromStdString(cc[4]);
-            sqls += "\n\n\n";
+            vector<pair<int, PageType>> pages = m_pCurSQLite3DB->GetAllPageIdsAndType(name.toStdString());
+            m_pHexWindow->SetPageNosAndType(pages);
+
+            sql = QString("SELECT * FROM SQLITE_MASTER WHERE name='%1'").arg(name);
+            // Init DDL Window
+            m_pCurSQLite3DB->ExecuteCmd(sql.toStdString(), tb, cc);
+            while(!tb.empty())
+            {
+                cell_content cc = tb.front();
+                tb.pop_front();
+                sqls += QString::fromStdString(cc[4]);
+                sqls += "\n\n\n";
+            }
+            m_pDDL->setText(sqls);
+        }
+        else
+        {
+            vector<pair<int, PageType>> pages;
+            foreach (PageUsageInfo info, infos)
+            {
+                pages.push_back(make_pair(info.pgno, info.type));
+            }
+
+            std::sort(pages.begin(), pages.end());
+            m_pHexWindow->SetPageNosAndType(pages);
         }
 
-        m_pDDL->setText(sqls);
 
-        QString getAllData = "SELECT * FROM " + tableName;
-        emit signalSQLiteQuery(getAllData);
 
-        vector<PageUsageInfo> infos = m_pCurSQLite3DB->GetPageUsageInfos("");
+        // Init Data Window
+        if(type != "freelist")
+        {
+            QString getAllData = "SELECT * FROM " + tableName;
+            emit signalSQLiteQuery(getAllData);
+        }
+
+        // Init Graph Window
         QString content = "digraph g { node [shape = record,style=\"filled\"];rankdir=LR;";
 
         for(auto it=infos.begin(); it!=infos.end(); ++it)
@@ -492,7 +515,6 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
                 int ncell = info.ncell;
 //                if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
 //                    ncell += 1;
-
                 scell = QString(" ncell %1").arg(ncell);
             }
 

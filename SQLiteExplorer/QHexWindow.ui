@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>558</width>
-    <height>370</height>
+    <width>720</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,7 +42,14 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QComboBox" name="comboBoxPageType"/>
+       <widget class="QComboBox" name="comboBoxPageType">
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonFirst">
@@ -71,7 +78,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="comboBox"/>
+       <widget class="QComboBox" name="comboBox">
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonNext">

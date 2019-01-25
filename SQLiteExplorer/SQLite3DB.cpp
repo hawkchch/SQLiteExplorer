@@ -112,44 +112,13 @@ vector<string> CSQLite3DB::GetAllTableNames()
     return names;
 }
 
-vector<int> CSQLite3DB::GetAllLeafPageIds( const string& tableName )
-{
-    LoadSqliteMaster();
-    m_pageUsageInfo.clear();
-
-    vector<int> ids;
-    string name = StrLower(tableName);
-    map<string, TableSchema>::iterator it = m_mapTableSchema.find(name);
-    if (it != m_mapTableSchema.end())
-    {
-        PageUsageBtree(it->second.rootpage, 0, 0, name.c_str());
-    }
-    else if (name == "sqlite_master")
-    {
-        PageUsageBtree(1, 0, 0, name.c_str());
-    }
-
-    for (vector<PageUsageInfo>::iterator it=m_pageUsageInfo.begin();
-        it != m_pageUsageInfo.end();
-        ++ it)
-    {
-        if (it->type == 0x0d)
-        {
-            ids.push_back(it->pgno);
-        }
-    }
-
-    std::sort(ids.begin(), ids.end());
-    return ids;
-}
-
-vector<pair<int, PageType> > CSQLite3DB::GetAllPageIdsAndType(const string &tableName)
+vector<pair<int, PageType> > CSQLite3DB::GetAllPageIdsAndType(const string &cname)
 {
     LoadSqliteMaster();
     m_pageUsageInfo.clear();
 
     vector<pair<int, PageType>> ids;
-    string name = StrLower(tableName);
+    string name = StrLower(cname);
     map<string, TableSchema>::iterator it = m_mapTableSchema.find(name);
     if (it != m_mapTableSchema.end())
     {
@@ -264,8 +233,9 @@ bool CSQLite3DB::GetTableInfo(const string &tableName, table_content &tb)
     return tb.size() > 0;
 }
 
-vector<PageUsageInfo> CSQLite3DB::GetPageUsageInfos(const string &tableName)
+vector<PageUsageInfo> CSQLite3DB::GetPageUsageInfos(bool freelist)
 {
+    if(freelist) GetFreeList();
     return m_pageUsageInfo;
 }
 
@@ -324,6 +294,94 @@ map<string, string> CSQLite3DB::GetDatabaseInfo()
 void CSQLite3DB::SetDatabaseInfo(const string &key, const string &val)
 {
 
+}
+
+vector<PageUsageInfo> CSQLite3DB::GetFreeList(bool useCache)
+{
+    if(!useCache)
+    {
+        m_pageUsageInfo.clear();
+
+        unsigned char* a = FileRead(0, 100);
+        int pgno = decodeInt32(a+32);
+        sqlite3_free(a);
+
+        int cnt = 0;
+        int i;
+        int n;
+        int iNext;
+        int parent = 1;
+        PageUsageInfo info;
+
+        while( pgno>0 && pgno<=m_mxPage && (cnt++)<m_mxPage )
+        {
+            //page_usage_msg(pgno, "freelist trunk #%d child of %d", cnt, parent);
+            a = FileRead((pgno-1)*m_pagesize, m_pagesize);
+            iNext = decodeInt32(a);
+            n = decodeInt32(a+4);
+
+            info.pgno = pgno;
+            info.parent = parent;
+            info.type = PAGE_TYPE_FREELIST_TRUNK;
+            info.ncell = n;
+            m_pageUsageInfo.push_back(info);
+            for(i=0; i<n; i++){
+                int child = decodeInt32(a + (i*4+8));
+                //page_usage_msg(child, "freelist leaf, child %d of trunk page %d", i, pgno);
+                info.pgno = child;
+                info.parent = pgno;
+                info.type = PAGE_TYPE_FREELIST_LEAF;
+                info.ncell = 1;
+                m_pageUsageInfo.push_back(info);
+            }
+            sqlite3_free(a);
+            parent = pgno;
+            pgno = iNext;
+        }
+    }
+
+    return m_pageUsageInfo;
+}
+
+void CSQLite3DB::DecodeFreeListTrunkPage(int pgno,
+                                         ContentArea &sNextTrunkPageNo, int &nNextTrunkPageNo,
+                                         ContentArea &sLeafPageCounts, int &nLeafPageCounts,
+                                         vector<ContentArea> &sLeafPageNos, vector<int> &nLeafPageNos,
+                                         ContentArea &sUnused)
+{
+    string pg = LoadPage(pgno, false);
+    const unsigned char* a = (const unsigned char*)pg.c_str();
+    int i;
+    int n;
+    int iNext;
+
+    if( pgno>0 && pgno<=m_mxPage )
+    {
+        //page_usage_msg(pgno, "freelist trunk #%d child of %d", cnt, parent);
+        iNext = decodeInt32(a);
+        n = decodeInt32(a+4);
+        sNextTrunkPageNo.m_startAddr = 0;
+        sNextTrunkPageNo.m_len = 4;
+        nNextTrunkPageNo = iNext;
+
+        sLeafPageCounts.m_startAddr = 4;
+        sLeafPageCounts.m_len = 4;
+        nLeafPageCounts = n;
+
+        for(i=0; i<n; i++){
+            int child = decodeInt32(a + (i*4+8));
+            //page_usage_msg(child, "freelist leaf, child %d of trunk page %d", i, pgno);
+
+            ContentArea ca;
+            ca.m_startAddr = i*4+8;
+            ca.m_len = 4;
+            sLeafPageNos.push_back(ca);
+            nLeafPageNos.push_back(child);
+        }
+
+        sUnused.m_startAddr = n*4+8;
+        sUnused.m_len = m_pagesize - sUnused.m_startAddr;
+    }
 }
 
 void CSQLite3DB::LoadSqliteMaster()
@@ -738,6 +796,7 @@ string CSQLite3Page::LoadPage(int pgno, bool decode)
         int64_t ofst = (pgno-1)*m_pParent->m_pagesize;
         const char* data = (const char*)m_pParent->FileRead(ofst, m_pParent->m_pagesize);
         m_pageRawContent.assign(data, m_pParent->m_pagesize);
+        sqlite3_free((void*)data);
         m_pgno = pgno;
         if(decode)
         {

@@ -5,6 +5,7 @@
         <file>ui/index.jpg</file>
         <file>ui/trigger.png</file>
         <file>ui/view.png</file>
+        <file>ui/freelist.png</file>
     </qresource>
     <qresource prefix="/toolicon">
         <file>ui/find.png</file>

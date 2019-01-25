@@ -104,8 +104,7 @@ public:
     vector<string> GetAllTableNames();
 
     // 获取所有叶子页id
-    vector<int> GetAllLeafPageIds(const string& tableName);
-    vector<pair<int, PageType> > GetAllPageIdsAndType(const string &tableName);
+    vector<pair<int, PageType> > GetAllPageIdsAndType(const string &name);
 
     // 获取指定页原始内容
     string LoadPage(int pgno, bool decode = true);
@@ -137,13 +136,23 @@ public:
     bool GetTableInfo(const string& tableName, table_content& tb);
 
     // 获取Page信息
-    vector<PageUsageInfo> GetPageUsageInfos(const string& tableName);
+    vector<PageUsageInfo> GetPageUsageInfos(bool freelist);
 
     // 获取数据库信息
     map<string, string> GetDatabaseInfo();
 
     // 设置数据库信息
     void SetDatabaseInfo(const string& key, const string& val);
+
+    // 获取自由页信息
+    vector<PageUsageInfo> GetFreeList(bool useCache = false);
+
+    // 解析自由页
+    void DecodeFreeListTrunkPage(int pgno,
+                                 ContentArea& sNextTrunkPageNo, int& nNextTrunkPageNo,
+                                 ContentArea& sLeafPageCounts, int& nLeafPageCounts,
+                                 vector<ContentArea>& sLeafPageNos, vector<int>& nLeafPageNos,
+                                 ContentArea& sUnused);
 
 private:
     bool OpenDatabase();
@@ -224,6 +233,7 @@ public:
 
     // 解码指定页，指定索引的数据
     bool DecodeCell(int pgno, int idx, vector<SQLite3Variant>& var);
+
 private:
     void DecodePage();
 
