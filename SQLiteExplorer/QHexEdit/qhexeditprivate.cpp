@@ -70,6 +70,9 @@ void QHexEditPrivate::setDocument(QHexDocument *document)
 
         if(!this->_metrics->ensureVisible())
             this->update();
+
+        /*! Contains the address, where the cursor is located. */
+        emit currentAddressChanged(cursor->offset());
     });
 
     connect(document->cursor(), &QHexCursor::blinkChanged, [this]() {
