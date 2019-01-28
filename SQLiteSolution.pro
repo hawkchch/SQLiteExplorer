@@ -1,4 +1,3 @@
-
 SUBDIRS += sqlite3
 #SUBDIRS += sqlite3tools
 #SUBDIRS += qtpropertybrowser
