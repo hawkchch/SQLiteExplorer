@@ -195,7 +195,7 @@ string CSQLite3DB::ExecuteCmd(const string& sql, table_content& table , cell_con
     return errmsg;
 }
 
-bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, vector<string> &pkFieldName, vector<string> &pkType, vector<int> &pkIdx)
+bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, vector<string> &pkFieldName, vector<string> &pkType, vector<int> &pkIdx, bool& withoutRowid)
 {
     bool bGetPkIsOk = false;
     if(tableName.empty())
@@ -216,6 +216,23 @@ bool CSQLite3DB::GetTablePrimaryKey(const string& tableName, vector<string> &pkF
                 pkIdx.push_back(StrToInt(cc[0].c_str()));
                 pkFieldName.push_back(cc[1]);
                 pkType.push_back(cc[2]);
+            }
+        }
+    }
+
+    withoutRowid = false;
+    string sql = "SELECT sql FROM sqlite_master WHERE type='table' AND tbl_name='" + tableName + "'";
+    CppSQLite3Query q = execQuery(sql.c_str());
+    if(!q.eof())
+    {
+        string txt = q.getStringField(0);
+        txt = txt.substr(txt.find(')'));
+        if(txt.size() > 0)
+        {
+            txt = StrUpper(txt);
+            if(txt.find("WITHOUT") != string::npos && txt.find("ROWID") != string::npos)
+            {
+                withoutRowid = true;
             }
         }
     }
