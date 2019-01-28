@@ -516,9 +516,11 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
                 break;
             }
 
+            // ncell为页面cell数量
             if(info.ncell>0)
             {
                 int ncell = info.ncell;
+                // 内部页有一个RightChild，所以ncell+1
                 if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
                     ncell += 1;
                 scell = QString(" ncell %1").arg(ncell);
@@ -526,11 +528,12 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
             if(info.type == PAGE_TYPE_OVERFLOW)
             {
+                // 因为PageNo是从1开始计数，所以此处cellno也从1开始计数
                 content.push_back(QString("%1[color=\"%2\", label=\"%1 overflow %3 from cell %4\"];")
                                   .arg(info.pgno)
                                   .arg(color)
                                   .arg(info.overflow_page_idx)
-                                  .arg(info.overflow_cell_idx));
+                                  .arg(info.overflow_cell_idx + 1));
             }
             else
             {
@@ -564,7 +567,12 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
         f.write(content.toStdString().c_str());
         f.close();
-
+        // dot: 渲染的图具有明确的方向性
+        // neato:渲染的图缺乏方向性
+        // twopi:渲染的图采用放射性布局
+        // circo:渲染的图采用环型布局
+        // fdp:渲染的图缺乏方向性
+        // sfdp:渲染大型的图，图片缺乏方向性
         QString program = "graphviz2.38/dot";
         QStringList arguments;
         arguments << "-Tpng" << "tmp.dot" << "-o" << "tmp.png";

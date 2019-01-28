@@ -181,8 +181,23 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
     string raw = m_pCurSQLite3DB->LoadPage(pgno, decode);
 
     QByteArray ba = QByteArray::fromStdString(raw);
-    QHexDocument* document = QHexDocument::fromMemory(ba);
-    m_pHexEdit->setDocument(document);
+    QHexDocument* document = m_pHexEdit->document();
+
+    if(document == NULL)
+    {
+        document = QHexDocument::fromMemory(ba);
+        m_pHexEdit->setDocument(document);
+    }
+    else
+    {
+        document->replace(0, ba);
+    }
+
+    document->clearHighlighting();
+    document->clearComments();
+    document->clearMetadata();
+
+    document->setBaseAddress((pgno-1)*m_pCurSQLite3DB->GetPageSize());
 
     // Bulk metadata management (paints only one time)
     document->beginMetadata();
