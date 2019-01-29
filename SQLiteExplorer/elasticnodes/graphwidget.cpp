@@ -121,7 +121,7 @@ void GraphWidget::SetPath(QString path)
                     np.label = tmp[1];
                 }
 
-                np.fillcolor = l[l.size() - 1];
+                np.fillcolor = l[l.size() - 1].simplified();
                 np.color = l[l.size() - 2];
                 np.shape = l[l.size() - 3];
                 np.style = l[l.size() - 4];

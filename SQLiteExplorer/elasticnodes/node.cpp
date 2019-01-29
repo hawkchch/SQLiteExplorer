@@ -186,7 +186,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     //QRadialGradient gradient(-3, -3, 10);
     QLinearGradient gradient(-3, -3, m_np.rc.width(), m_np.rc.height());
 
-    gradient.setColorAt(0, QColor(m_np.color));
+    gradient.setColorAt(0, QColor(m_np.fillcolor));
 //    if (option->state & QStyle::State_Sunken) {
 //        //gradient.setCenter(3, 3);
 //        //gradient.setFocalPoint(3, 3);
@@ -204,7 +204,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     //painter->drawRoundedRect(-10, -10, 50, 20, 2, 2);
     painter->drawRoundedRect(0-m_np.rc.width()/2, 0-m_np.rc.height()/2, m_np.rc.width(), m_np.rc.height(), 2, 2);
 
-    QRectF rc(0-m_np.rc.width()/2, 0-m_np.rc.height()/2, m_np.rc.width(), m_np.rc.height());
+    QRectF rc(0-m_np.rc.width()/2+3, 0-m_np.rc.height()/2, m_np.rc.width(), m_np.rc.height());
 
     QFont font;
     font.setPointSize(14);
