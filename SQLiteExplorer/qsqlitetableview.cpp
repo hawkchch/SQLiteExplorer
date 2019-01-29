@@ -6,15 +6,14 @@
 
 QSQLiteTableView::QSQLiteTableView(QWidget *parent)
 : QTableWidget(parent)
-, m_pParent(nullptr)
 , m_pCurSQLite3DB(nullptr)
 , m_rowThresh(100)
 {
-    MainWindow* pMainWindow = qobject_cast<MainWindow*>(parent);
-    if (pMainWindow)
-    {
-        m_pParent = pMainWindow;
-    }
+//    MainWindow* pMainWindow = qobject_cast<MainWindow*>(parent);
+//    if (pMainWindow)
+//    {
+//        m_pParent = pMainWindow;
+//    }
 
     QHeaderView *headers = horizontalHeader();
     //SortIndicator为水平标题栏文字旁边的三角指示器
@@ -25,11 +24,7 @@ QSQLiteTableView::QSQLiteTableView(QWidget *parent)
 
 void QSQLiteTableView::onSQLiteQueryReceived(const QString &sql)
 {
-    if (m_pParent)
-    {
-        m_pCurSQLite3DB = m_pParent->GetCurSQLite3DB();
-    }
-    else
+    if (!m_pCurSQLite3DB)
     {
         return;
     }

@@ -1,4 +1,4 @@
-#include "graphwindow.h"
+#include "GraphWindow.h"
 #include "ui_graphwindow.h"
 
 GraphWindow::GraphWindow(QWidget *parent) :

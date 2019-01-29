@@ -15,6 +15,11 @@ class QSQLiteTableView : public QTableWidget
 public:
     QSQLiteTableView(QWidget *parent = 0);
 
+    CSQLite3DB* SetDb(CSQLite3DB* pDb)
+    {
+        m_pCurSQLite3DB = pDb;
+    }
+
 signals:
     void dataLoaded(const QString& msg);
 
@@ -23,7 +28,7 @@ public slots:
     void onValueChanged(int value);
 
 private:
-    MainWindow* m_pParent;
+    //MainWindow* m_pParent;
     CSQLite3DB* m_pCurSQLite3DB;
     CppSQLite3Query m_curQuery;
     int m_rowThresh;

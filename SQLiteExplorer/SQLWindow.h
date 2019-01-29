@@ -9,6 +9,7 @@ class QSQLiteQueryWindow;
 }
 
 class QSQLiteTableView;
+class MainWindow;
 
 class QSQLiteQueryWindow : public QWidget
 {
@@ -24,7 +25,7 @@ signals:
 private slots:
     void onExecuteBtnClicked();
     void onExplainBtnClicked();
-
+    void onDataLoaded(const QString& msg);
 private:
     Ui::QSQLiteQueryWindow *ui;
 
@@ -32,6 +33,8 @@ private:
 
     // QSplitter
     QSplitter* m_pSplitter;
+
+    MainWindow* m_pParent;
 };
 
 #endif // QSQLITEQUERYWINDOW_H

@@ -9,7 +9,7 @@
 #include <QMimeData>
 
 #include "qsqlitetableview.h"
-#include "qsqlitequerywindow.h"
+#include "SQLWindow.h"
 
 #include <QDebug>
 #include <QProcess>
@@ -78,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pDatabase = new QTableWidget(this);
 
     // Init Data Window
-    m_pData = new QSQLiteTableView(this);
+    m_pData = new DataWindow(this);
     connect(this, SIGNAL(signalSQLiteQuery(QString)), m_pData, SLOT(onSQLiteQueryReceived(QString)));
 
     // Init SQL Window
@@ -106,6 +106,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
     m_pTabWidget->addTab(m_pDDL, "DDL");
     m_pTabWidget->addTab(m_pGraph, "Graph");
+
+    m_pTabWidget->setCurrentIndex(1);
 
     // Init Splitter
     m_pSplitter = new QSplitter(Qt::Horizontal);

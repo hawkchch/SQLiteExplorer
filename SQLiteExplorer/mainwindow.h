@@ -28,7 +28,8 @@
 #include "QSQLiteMasterTreeView.h"
 #include "SQLite3DB.h"
 
-#include "graphwindow.h"
+#include "GraphWindow.h"
+#include "DataWindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -90,7 +91,7 @@ private:
     QHexWindow*         m_pHexWindow;
     QTableWidget*       m_pDatabase;
     QSQLiteQueryWindow* m_pSQL;
-    QSQLiteTableView*   m_pData;
+    DataWindow*         m_pData;
     QTableWidget*       m_pDesign;
     QTextEdit*          m_pDDL;
     GraphWindow*        m_pGraph;
