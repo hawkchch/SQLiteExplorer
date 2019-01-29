@@ -2,6 +2,7 @@
 #define GRAPHWINDOW_H
 
 #include <QWidget>
+#include "pixitem.h"
 
 namespace Ui {
 class GraphWindow;
@@ -15,8 +16,13 @@ public:
     explicit GraphWindow(QWidget *parent = 0);
     ~GraphWindow();
 
+    void SetPath(QString path);
 private:
     Ui::GraphWindow *ui;
+
+    QGraphicsScene* m_graphicsScene;
+    PixItem*        m_graphicsItem;
+    QGraphicsView*  m_graphicsView;
 };
 
 #endif // GRAPHWINDOW_H

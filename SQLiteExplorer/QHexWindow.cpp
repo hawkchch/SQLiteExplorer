@@ -55,7 +55,7 @@ QHexWindow::QHexWindow(QWidget *parent) :
 
     m_pageTypeName[PAGE_TYPE_UNKNOWN] = "Unknown";
     m_pageTypeName[PAGE_TYPE_INDEX_INTERIOR] = "IndexInterior";
-    m_pageTypeName[PAGE_TYPE_TABLE_INTERIOR] = "TableInteror";
+    m_pageTypeName[PAGE_TYPE_TABLE_INTERIOR] = "TableInterior";
     m_pageTypeName[PAGE_TYPE_INDEX_LEAF] = "IndexLeaf";
     m_pageTypeName[PAGE_TYPE_TABLE_LEAF] = "TableLeaf";
     m_pageTypeName[PAGE_TYPE_OVERFLOW] = "Overflow";

@@ -95,12 +95,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pDDL->setReadOnly(true);
 
     // Init Graph Window
-    m_graphicsScene = new QGraphicsScene;
-    m_graphicsItem = new PixItem;
-    m_graphicsView = new MyGraphicsView(this);
-    m_graphicsScene->addItem(m_graphicsItem);
-    m_graphicsView->setScene(m_graphicsScene);
-
+    m_pGraph = new GraphWindow(this);
 
     // Init QTabWidget
     m_pTabWidget = new QTabWidget(this);
@@ -110,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTabWidget->addTab(m_pDesign, "Design");
     m_pTabWidget->addTab(m_pHexWindow, "HexWindow");
     m_pTabWidget->addTab(m_pDDL, "DDL");
-    m_pTabWidget->addTab(m_graphicsView, "Graph");
+    m_pTabWidget->addTab(m_pGraph, "Graph");
 
     // Init Splitter
     m_pSplitter = new QSplitter(Qt::Horizontal);
@@ -523,7 +518,7 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
                 // 内部页有一个RightChild，所以ncell+1
                 if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
                     ncell += 1;
-                scell = QString(" ncell %1").arg(ncell);
+                scell = QString("ncell %1").arg(ncell);
             }
 
             if(info.type == PAGE_TYPE_OVERFLOW)
@@ -573,25 +568,77 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
         // circo:渲染的图采用环型布局
         // fdp:渲染的图缺乏方向性
         // sfdp:渲染大型的图，图片缺乏方向性
+        // patchwork: 主要用于树哈希图（tree map）
         QString program = "graphviz2.38/dot";
         QStringList arguments;
-        arguments << "-Tpng" << "tmp.dot" << "-o" << "tmp.png";
+        arguments << "-Tplain" << "tmp.dot" << "-o" << "tmp.plain";
         QProcess *myProcess = new QProcess(this);
         connect(myProcess, SIGNAL(finished(int)), this, SLOT(onProcessFinished(int)));
         myProcess->start(program, arguments);
+
+
+        arguments.clear();
+        arguments << "-Tpng" << "tmp.dot" << "-o" << "tmp.png";
+        QProcess *myProcess2 = new QProcess(this);
+        connect(myProcess2, SIGNAL(finished(int)), this, SLOT(onProcessFinished(int)));
+        myProcess2->start(program, arguments);
+
+//        plain ,
+//        plain-ext
+//        The plain and plain-ext formats produce output using a simple, line-based language. The latter format differs in that, on edges,
+//                it provides port names on head and tail nodes when applicable.
+//        There are four types of statements.
+
+//         graph scale width height
+//         node name x y width height label style shape color fillcolor
+//         edge tail head n x1 y1 .. xn yn [label xl yl] style color
+//         stop
+//        graph
+//        The width and height values give the width and height of the drawing. The lower left corner of the drawing is at the origin.
+//                The scale value indicates how the drawing should be scaled if a size attribute was given and the drawing needs to be
+//                scaled to conform to that size. If no scaling is necessary, it will be set to 1.0. Note that all graph, node and edge
+//                coordinates and lengths are given unscaled.
+//        node
+//        The name value is the name of the node, and x and y give the node's position. The width and height are the width and height
+//                of the node. The label, style, shape, color and fillcolor give the node's label, style, shape, color and fillcolor,
+//                respectively, using attribute default values where necessary. If the node does not have a style attribute, "solid" is used.
+//        edge
+//        The tail and head values give the names of the head and tail nodes. In plain-ext format, the head or tail name will be appended
+//                with a colon and a portname if the edge connects to the node at a port. n is the number of control points defining the
+//                B-spline forming the edge. This is followed by 2*n numbers giving the x and y coordinates of the control points in order
+//                from tail to head. If the edge has a label, this comes next followed by the x and y coordinates of the label's position.
+//                The edge description is completed by the edge's style and color. As with nodes, if a style is not defined, "solid" is used.
+//        Note: The control points given in an edge statement define the body of the edge. In particular, if the edge has an arrowhead to
+//              the head or tail node, there will be a gap between the last or first control points and the boundary of the associated node.
+//              There are at least 3 possible ways of handling this gap:
+
+//        Arrange that the input graph uses dir=none, arrowhead=none, or arrowtail=none for all edges. In this case, the terminating control
+//              points will always touch the node.
+//        Consider the line segment joining the control point and the center of the node, and determine the point where the segment intersects
+//              the node's boundary. Then use the control point and the intersection point as the main axis of an arrowhead. The problem with
+//              this approach is that, if the edge has a port, the edge will not be pointing to the center of the node. In this case, rather
+//              than use the control point and center point, one can use the control point and its tangent.
+//        Arrange that the input graph uses headclip=false or tailclip=false. In this case, the edge will terminate at the node's center rather
+//              than its boundary. If arrowheads are used, there will still be a gap, but normally this will occur within the node. The application
+//              will still need to clip the spline to the node boundary. Also, as with the previous item, if the edge points to a node port, this
+//              technique will fail.
+//        The output consists of one graph line, a sequence of node lines, one per node, a sequence of edge lines, one per edge, and a final stop
+//              line. All units are in inches, represented by a floating point number.
+//        Note that the plain formats provide minimal information, really giving not much more than node positions and sizes, and edge spline control
+//              points. These formats are usually most useful to applications wanting just this geometric information, and willing to fill in all of
+//              the graphical details. The only real advantages to these formats is their terseness and their ease of parsing. In general, the dot
+//              and xdot are preferable in terms of the quantity of information provided.
     }
 }
 
 void MainWindow::onProcessFinished(int ret)
 {
-    QString path = QString("tmp.png");
-    QPixmap px;
-    px.load(path);
+    QProcess* process = qobject_cast<QProcess*>(sender());
+    if(process)
+    {
+        QStringList arg = process->arguments();
+        m_pGraph->SetPath(arg[arg.size()-1]);
 
-    m_graphicsItem->setPixmap(px);
-    m_graphicsItem->setPos(0,0);
-    m_graphicsItem->setZoomState(1);
-    qreal w = px.width();
-    qreal h = px.height();
-    m_graphicsScene->setSceneRect(-1*(w/2), -1*(h/2), w, h);
+        delete process;
+    }
 }

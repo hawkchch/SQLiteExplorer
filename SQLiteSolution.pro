@@ -3,8 +3,8 @@ SUBDIRS += sqlite3
 #SUBDIRS += qtpropertybrowser
 SUBDIRS += SQLiteExplorer
 
-#QMAKE_CXXFLAGS += /MP
+QMAKE_CXXFLAGS += /MP
 
-#CONFIG += ordered
+CONFIG += ordered
 TEMPLATE  = subdirs
 

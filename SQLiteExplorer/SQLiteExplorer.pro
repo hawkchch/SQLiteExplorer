@@ -35,7 +35,8 @@ SOURCES += \
     qsqlitetableview.cpp \
     qsqlitequerywindow.cpp \
     pixitem.cpp \
-    CppSQLite3.cpp
+    CppSQLite3.cpp \
+    graphwindow.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -45,14 +46,16 @@ HEADERS += \
     qsqlitetableview.h \
     qsqlitequerywindow.h \
     pixitem.h \
-    CppSQLite3.h
+    CppSQLite3.h \
+    graphwindow.h
 
 CONFIG += c++11
 
 FORMS += \
         mainwindow.ui \
         qhexwindow.ui \
-    qsqlitequerywindow.ui
+    qsqlitequerywindow.ui \
+    graphwindow.ui
 
 DESTDIR  = $$PWD/../bin
 
@@ -60,6 +63,7 @@ LIBS = -L$$DESTDIR -lsqlite3
 
 include(QHexEdit/QHexEdit.pri)
 include(QSQLiteMasterTreeView/QSQLiteMasterTreeView.pri)
+include(elasticnodes/elasticnodes.pri)
 
 RESOURCES += \
     ui_icon.qrc
