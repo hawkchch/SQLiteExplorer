@@ -1,5 +1,5 @@
-#include "qhexwindow.h"
-#include "ui_qhexwindow.h"
+#include "HexWindow.h"
+#include "ui_hexwindow.h"
 
 #include "mainwindow.h"
 #include <QDebug>

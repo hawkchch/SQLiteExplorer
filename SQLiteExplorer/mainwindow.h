@@ -24,7 +24,7 @@
 #include <QPixmap>
 #include <QTimerEvent>
 
-#include "QHexWindow.h"
+#include "HexWindow.h"
 #include "QSQLiteMasterTreeView.h"
 #include "SQLite3DB.h"
 

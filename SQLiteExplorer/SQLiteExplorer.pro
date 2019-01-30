@@ -29,7 +29,6 @@ INCLUDEPATH += ../sqlite3
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        qhexwindow.cpp \
     SQLite3DB.cpp \
     utils.cpp \
     qsqlitetableview.cpp \
@@ -38,11 +37,11 @@ SOURCES += \
     DataWindow.cpp \
     GraphWindow.cpp \
     SQLWindow.cpp \
-    DialogAbout.cpp
+    DialogAbout.cpp \
+    HexWindow.cpp
 
 HEADERS += \
         mainwindow.h \
-        qhexwindow.h \
     SQLite3DB.h \
     utils.h \
     qsqlitetableview.h \
@@ -51,17 +50,18 @@ HEADERS += \
     DataWindow.h \
     GraphWindow.h \
     SQLWindow.h \
-    DialogAbout.h
+    DialogAbout.h \
+    HexWindow.h
 
 CONFIG += c++11
 
 FORMS += \
         mainwindow.ui \
-        qhexwindow.ui \
     DataWindow.ui \
     GraphWindow.ui \
     SQLWindow.ui \
-    DialogAbout.ui
+    DialogAbout.ui \
+    HexWindow.ui
 
 DESTDIR  = $$PWD/../bin
 
