@@ -3,7 +3,9 @@
 
 #include <QWidget>
 #include <QTableWidget>
+#include <QTreeView>
 #include <QSplitter>
+#include <qstandarditemmodel.h>
 
 #include <QHexEdit/qhexedit.h>
 
@@ -29,6 +31,8 @@ public:
     void SetPageNosAndType(const vector<pair<int, PageType>>& pgs);
     void SetTableName(const QString& name, const QString& tableName, const QString& type);
 
+    void setPageHdrData(PageType type, ContentArea& pageHeaderArea, ContentArea& cellidxArea, ContentArea& unusedArea, int pgno, string raw);
+    void setPageCellData(string raw);
 public slots:
     void onPageIdSelect(int pgno, PageType type);
     void onPageTypeChanged(const QString& item);
@@ -47,13 +51,16 @@ private:
 private:
     Ui::HexWindow *ui;
 
+    QTreeView*          m_pPageView;
+    QStandardItemModel* m_pPageViewModel;
 
-    QSplitter* m_pSplitter;
-    QHexEdit* m_pHexEdit;
-    QTableWidget* m_pTableWdiget;
+    QSplitter*      m_pHSplitter;
+    QSplitter*      m_pSplitter;
+    QHexEdit*       m_pHexEdit;
+    QTableWidget*   m_pTableWdiget;
 
-    MainWindow* m_pParent;
-    CSQLite3DB* m_pCurSQLite3DB;
+    MainWindow*     m_pParent;
+    CSQLite3DB*     m_pCurSQLite3DB;
 
     QString m_curTableName;
     QString m_curName;

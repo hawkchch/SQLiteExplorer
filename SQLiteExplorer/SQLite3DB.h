@@ -38,6 +38,14 @@ struct SQLite3Variant
     string blob;
     string text;
 
+    // typeAndLen字段
+    int typeAndLenBlob;
+    int typeAndLenVal;
+    int typeAndLenStartAddrInCell;
+    int typeAndLenLen;
+    int valStartAddrInCell;
+    int valLen;
+
 private:
     string desc;
 };
@@ -252,7 +260,7 @@ private:
 
     void Clear();
 
-private:
+public:
     CSQLite3DB* m_pParent;
 
     string      m_pageRawContent;
@@ -266,7 +274,6 @@ private:
     int m_rightChildPageNumber;
 
 
-public:
     ContentArea m_pageHeaderArea;       // 页头区域
     ContentArea m_cellIndexArea;        // cellIndex区域
     vector<ContentArea> m_payloadArea;  // payload区域
