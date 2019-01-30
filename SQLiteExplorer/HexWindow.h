@@ -13,17 +13,17 @@
 using namespace std;
 
 namespace Ui {
-class QHexWindow;
+class HexWindow;
 }
 
 class MainWindow;
-class QHexWindow : public QWidget
+class HexWindow : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit QHexWindow(QWidget *parent = 0);
-    ~QHexWindow();
+    explicit HexWindow(QWidget *parent = 0);
+    ~HexWindow();
 
     void SetPageNos(const vector<int>& pgnos);
     void SetPageNosAndType(const vector<pair<int, PageType>>& pgs);
@@ -45,7 +45,7 @@ private:
 
 
 private:
-    Ui::QHexWindow *ui;
+    Ui::HexWindow *ui;
 
 
     QSplitter* m_pSplitter;

@@ -97,7 +97,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pDesign = new QTableWidget(this);
 
     // Init Hex Window
-    m_pHexWindow = new QHexWindow(this);
+    m_pHexWindow = new HexWindow(this);
 
     // Init DDL Window
     m_pDDL = new QTextEdit(this);

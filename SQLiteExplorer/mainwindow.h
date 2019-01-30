@@ -90,7 +90,7 @@ private:
     // QTabWidget with sub widget
     QTabWidget* m_pTabWidget;
 
-    QHexWindow*         m_pHexWindow;
+    HexWindow*          m_pHexWindow;
     QTableWidget*       m_pDatabase;
     QSQLiteQueryWindow* m_pSQL;
     DataWindow*         m_pData;

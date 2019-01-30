@@ -8,9 +8,9 @@
 #include <set>
 using std::set;
 
-QHexWindow::QHexWindow(QWidget *parent) :
+HexWindow::HexWindow(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::QHexWindow)
+    ui(new Ui::HexWindow)
 {
     ui->setupUi(this);
 
@@ -64,12 +64,12 @@ QHexWindow::QHexWindow(QWidget *parent) :
     m_pageTypeName[PAGE_TYPE_PTR_MAP] = "PtrMap";
 }
 
-QHexWindow::~QHexWindow()
+HexWindow::~HexWindow()
 {
     delete ui;
 }
 
-void QHexWindow::SetPageNos(const vector<int> &pgnos)
+void HexWindow::SetPageNos(const vector<int> &pgnos)
 {
     if (m_pParent)
     {
@@ -94,7 +94,7 @@ void QHexWindow::SetPageNos(const vector<int> &pgnos)
     ui->comboBox->setCurrentIndex(0);
 }
 
-void QHexWindow::SetPageNosAndType(const vector<pair<int, PageType> > &pgs)
+void HexWindow::SetPageNosAndType(const vector<pair<int, PageType> > &pgs)
 {
     if (m_pParent)
     {
@@ -131,7 +131,7 @@ void QHexWindow::SetPageNosAndType(const vector<pair<int, PageType> > &pgs)
     ui->comboBoxPageType->addItems(pts);
 }
 
-void QHexWindow::SetTableName(const QString &name, const QString &tableName, const QString &type)
+void HexWindow::SetTableName(const QString &name, const QString &tableName, const QString &type)
 {
     if (m_pParent)
     {
@@ -173,7 +173,7 @@ void QHexWindow::SetTableName(const QString &name, const QString &tableName, con
     }
 }
 
-void QHexWindow::onPageIdSelect(int pgno, PageType type)
+void HexWindow::onPageIdSelect(int pgno, PageType type)
 {
     bool decode = (
         type == PAGE_TYPE_INDEX_INTERIOR ||type == PAGE_TYPE_TABLE_INTERIOR ||
@@ -540,7 +540,7 @@ void QHexWindow::onPageIdSelect(int pgno, PageType type)
     setPushBtnStats();
 }
 
-void QHexWindow::onPageTypeChanged(const QString &pageType)
+void HexWindow::onPageTypeChanged(const QString &pageType)
 {
     if(pageType == "AllPageType")
     {
@@ -563,7 +563,7 @@ void QHexWindow::onPageTypeChanged(const QString &pageType)
     }
 }
 
-void QHexWindow::onComboxChanged(const QString &item)
+void HexWindow::onComboxChanged(const QString &item)
 {
     QStringList list = item.split('/');
     if(list.size() > 0)
@@ -576,7 +576,7 @@ void QHexWindow::onComboxChanged(const QString &item)
     }
 }
 
-void QHexWindow::onPrevBtnClicked()
+void HexWindow::onPrevBtnClicked()
 {
     int curIdx = ui->comboBox->currentIndex();
     if(curIdx > 0)
@@ -586,7 +586,7 @@ void QHexWindow::onPrevBtnClicked()
     }
 }
 
-void QHexWindow::onNextBtnClicked()
+void HexWindow::onNextBtnClicked()
 {
     int curIdx = ui->comboBox->currentIndex();
     int count = ui->comboBox->count();
@@ -597,7 +597,7 @@ void QHexWindow::onNextBtnClicked()
     }
 }
 
-void QHexWindow::onFirstBtnClicked()
+void HexWindow::onFirstBtnClicked()
 {
     int count = ui->comboBox->count();
     if(count > 0)
@@ -606,7 +606,7 @@ void QHexWindow::onFirstBtnClicked()
     }
 }
 
-void QHexWindow::onLastBtnClicked()
+void HexWindow::onLastBtnClicked()
 {
     int count = ui->comboBox->count();
     if(count > 0)
@@ -615,7 +615,7 @@ void QHexWindow::onLastBtnClicked()
     }
 }
 
-void QHexWindow::onCurrentAddressChanged(qint64 address)
+void HexWindow::onCurrentAddressChanged(qint64 address)
 {
     for(auto it=m_payloadArea.begin(); it!=m_payloadArea.end(); ++it)
     {
@@ -631,7 +631,7 @@ void QHexWindow::onCurrentAddressChanged(qint64 address)
     }
 }
 
-void QHexWindow::setPushBtnStats()
+void HexWindow::setPushBtnStats()
 {
     int curIdx = ui->comboBox->currentIndex();
     int count = ui->comboBox->count();
