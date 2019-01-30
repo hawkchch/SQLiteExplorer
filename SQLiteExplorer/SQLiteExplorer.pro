@@ -37,7 +37,8 @@ SOURCES += \
     CppSQLite3.cpp \
     DataWindow.cpp \
     GraphWindow.cpp \
-    SQLWindow.cpp
+    SQLWindow.cpp \
+    DialogAbout.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -49,7 +50,8 @@ HEADERS += \
     CppSQLite3.h \
     DataWindow.h \
     GraphWindow.h \
-    SQLWindow.h
+    SQLWindow.h \
+    DialogAbout.h
 
 CONFIG += c++11
 
@@ -58,7 +60,8 @@ FORMS += \
         qhexwindow.ui \
     DataWindow.ui \
     GraphWindow.ui \
-    SQLWindow.ui
+    SQLWindow.ui \
+    DialogAbout.ui
 
 DESTDIR  = $$PWD/../bin
 

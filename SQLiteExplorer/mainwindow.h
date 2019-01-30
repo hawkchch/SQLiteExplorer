@@ -69,6 +69,7 @@ private Q_SLOTS:
     void onCloseActionTriggered();
     void onCheckActionTriggered();
     void onVacuumActionTriggered();
+    void onAboutActionTriggered();
 
 private:
     bool openDatabaseFile(const QString& path);
@@ -79,6 +80,7 @@ private:
     QAction* m_pCloseAction;
     QAction* m_pCheckAction;
     QAction* m_pVacuumAction;
+    QAction* m_pAboutAction;
 
 
     // QTreeView at left

@@ -14,6 +14,7 @@
 #include <QDebug>
 #include <QProcess>
 #include <qevent.h>
+#include "DialogAbout.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -23,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Init Application icon
     setWindowIcon(QIcon(":/ui/app.png"));
+    setWindowTitle("SQLiteExplorer");
 
     // Init Action
     m_pOpenAction = new QAction(QIcon(":/ui/0.png"), tr("&Open..."), this);
@@ -43,6 +45,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pVacuumAction->setStatusTip(tr("Vacuum Database"));
     connect(m_pVacuumAction, &QAction::triggered, this, &MainWindow::onVacuumActionTriggered);
 
+    m_pAboutAction = new QAction(QIcon(":/toolicon/ui/info.png"), tr("&About..."), this);
+    m_pAboutAction->setStatusTip(tr("About"));
+    connect(m_pAboutAction, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
+
     // Init File Menu And Tool
     QMenu *file = menuBar()->addMenu(tr("&File"));
     file->addAction(m_pOpenAction);
@@ -55,6 +61,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QMenu *tool = menuBar()->addMenu(tr("&Database"));
     tool->addAction(m_pCheckAction);
     tool->addAction(m_pVacuumAction);
+
+    QMenu *help = menuBar()->addMenu(tr("Help"));
+    help->addAction(m_pAboutAction);
 
     QToolBar *toolBar = addToolBar(tr("&Database"));
     toolBar->addAction(m_pCheckAction);
@@ -242,6 +251,12 @@ void MainWindow::onVacuumActionTriggered()
             QMessageBox::information(this, tr("SQLiteExplorer"), QString::fromStdString(e.errorMessage()));
         }
     }
+}
+
+void MainWindow::onAboutActionTriggered()
+{
+    DialogAbout dlg(this);//加this后子窗口会在父窗口上面
+    dlg.exec();//显示对话框，程序阻塞
 }
 
 #define PathRole    Qt::UserRole+1
@@ -525,7 +540,7 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
                 // 内部页有一个RightChild，所以ncell+1
                 if(info.type == PAGE_TYPE_INDEX_INTERIOR || info.type == PAGE_TYPE_TABLE_INTERIOR)
                     ncell += 1;
-                scell = QString("ncell %1").arg(ncell);
+                scell = QString("%1").arg(ncell);
             }
 
             if(info.type == PAGE_TYPE_OVERFLOW)
@@ -539,9 +554,8 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
             }
             else
             {
-                content.push_back(QString("%1[color=\"%2\", label=\"%1 %3\"];").arg(info.pgno).arg(color).arg(scell));
+                content.push_back(QString("%1[color=\"%2\", label=\"%1 ncells:%3\"];").arg(info.pgno).arg(color).arg(scell));
             }
-
         }
 
         for(auto it=infos.begin(); it!=infos.end(); ++it)
