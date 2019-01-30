@@ -422,6 +422,13 @@ void CSQLite3DB::LoadSqliteMaster()
             tableInfo.sql = cc[4];
         }
 
+        TableSchema& tableInfo = m_mapTableSchema["sqlite_master"];
+        tableInfo.type = "table";
+        tableInfo.name = "sqlite_master";
+        tableInfo.tbl_name = "sqlite_master";
+        tableInfo.rootpage = 1;
+        tableInfo.sql = "CREATE TABLE IF NOT EXISTS sqlite_master (type TEXT, name TEXT, tbl_name TEXT, rootpage INTEGER, sql TEXT)";
+
         m_bTableInfoHasLoad = true;
     }
 }

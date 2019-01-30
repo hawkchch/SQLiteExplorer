@@ -266,6 +266,11 @@ bool MainWindow::openDatabaseFile(const QString &path)
     table_content tb;
     cell_content hdr;
     QString errmsg = QString::fromStdString(pSqlite->ExecuteCmd("select type, name, tbl_name from sqlite_master order by tbl_name, name", tb, hdr));
+    cell_content sqlite_master;
+    sqlite_master.push_back("table");
+    sqlite_master.push_back("sqlite_master");
+    sqlite_master.push_back("sqlite_master");
+    tb.push_back(sqlite_master);
 
     if (errmsg.size() > 0)
     {
