@@ -31,20 +31,31 @@ enum SQLite3DataType
 };
 struct SQLite3Variant 
 {
+public:
+    SQLite3Variant():iVal(0), lfVal(0), blobStartAddr(0), tVal(0), tStartAddr(0), tLen(0)
+    {}
+    int getInt(int nNullValue=0);
+    sqlite_int64 getInt64(sqlite_int64 nNullValue=0);
+    double getFloat(double fNullValue=0);
+    const char* getString(const char* szNullValue="");
+    const unsigned char* getBlob(int& nLen);
+
     SQLite3DataType type;
+
 
     i64 iVal;
     double lfVal;
     string blob;
     string text;
 
+    int blobStartAddr;
+    //int blobLen;
+
     // typeAndLen字段
-    int typeAndLenBlob;
-    int typeAndLenVal;
-    int typeAndLenStartAddrInCell;
-    int typeAndLenLen;
-    int valStartAddrInCell;
-    int valLen;
+    string  tBlob;
+    int     tVal;
+    int     tStartAddr;
+    i64     tLen;
 
 private:
     string desc;
@@ -324,19 +335,27 @@ public:
 
 private:
     CSQLite3Page* m_pParent;
-    string m_rawContent;
+    string m_cellContent;
+    string m_payloadContent;
 
+    // 下面所有StartAddr都是相对于m_rawContent起点来说的。
     i64 m_nPayload; // 整个cell大小 Not Contain itself
+    int m_nPayloadStartAddr;
+    i64 m_nPayloadLen;
     i64 m_nLocal;   // cell在当前page大小
 
     unsigned char m_cType;
 
     // 
     int m_leftChild;
+    int m_leftChildStartAddr;
+    i64 m_leftChildLen; // 左孩子varint长度
     i64 m_rowid;
+    int m_rowidStartAddr;
+    i64 m_rowidLen;     // rowid varint len
     string m_pk;
-    int m_cellHeaderSize; // Contain itself
-    
-    vector<int> m_typeAndLen;
+    i64 m_cellHeaderSize; // Contain itself
+    int m_cellHeaderSizeStartAddr;
+    i64 m_cellHeaderSizeLen;
     vector<SQLite3Variant> m_datas;
 };

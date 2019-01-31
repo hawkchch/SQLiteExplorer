@@ -855,14 +855,6 @@ void HexWindow::onCurrentAddressChanged(qint64 address)
             break;
         }
     }
-
-//    for(int row=0; row<m_pPageViewModel->rowCount(); row++)
-//    {
-//        for(int col=0; col<m_pPageViewModel->columnCount(); col++)
-//        {
-//            QStandardItem* item = m_pPageViewModel->item(row, col);
-//        }
-//    }
 }
 
 void HexWindow::setPushBtnStats()

@@ -1019,17 +1019,23 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
     int n = 0;
 
     //qDebug() << "DescribeCell cType =" << cType << " CellContent =" << a;
+    m_leftChildLen = m_nPayloadLen = m_rowidLen = m_cellHeaderSizeLen = 0;
+    m_leftChildStartAddr = m_nPayloadStartAddr = m_rowidStartAddr = m_cellHeaderSizeStartAddr = 0;
 
     m_datas.clear();
     i = 0;
     m_cType = cType;
     if( cType<=5 ){
         m_leftChild = ((a[0]*256 + a[1])*256 + a[2])*256 + a[3];
+        m_leftChildStartAddr = n;
+        m_leftChildLen = 4;
         a += 4;
         n += 4;
     }
     if( cType!=5 ){
         i = decodeVarint(a, &m_nPayload);
+        m_nPayloadStartAddr = n;
+        m_nPayloadLen = i;
         a += i;
         n += i;
         m_nLocal = m_pParent->LocalPayload(m_nPayload, cType);
@@ -1038,10 +1044,14 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
     }
     if( cType==5 || cType==13 ){
         i = decodeVarint(a, &m_rowid);
+        m_rowidStartAddr = n;
+        m_rowidLen = i;
         a += i;
         n += i;
     }
-    m_rawContent.assign((const char*)a, m_nLocal);
+
+    m_cellContent.assign((const char*)a-n, n);
+    m_payloadContent.assign((const char*)a, m_nLocal);
     if( m_nLocal<m_nPayload ){
         int ovfl = decodeInt32(a + m_nLocal);
         int cnt = 0;
@@ -1053,10 +1063,11 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
             a = m_pParent->m_pParent->FileRead((ovfl-1)*pagesize, pagesize);
             ovfl = decodeInt32(a);
             ovflContent.assign((const char*)a+4, pagesize-4);
-            m_rawContent += ovflContent;
+            m_payloadContent += ovflContent;
             sqlite3_free(a);
         }
-        m_rawContent = m_rawContent.substr(0, m_nPayload);
+        m_payloadContent = m_payloadContent.substr(0, m_nPayload);
+        m_cellContent += m_payloadContent;
 
 //         unsigned char *b = &a[m_nLocal];
 //         ovfl = ((b[0]*256 + b[1])*256 + b[2])*256 + b[3];
@@ -1078,28 +1089,38 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
 bool CSQLite3Payload::DescribeContent()
 {
     //qDebug() << "m_ctype =" << m_cType << " DescribeContent =" << m_rawContent.c_str();
+    i64 offset = m_cellContent.size() - m_payloadContent.size();
     int n;
     i64 i, x, v;
     const unsigned char *pData;
     const unsigned char *pLimit;
-    unsigned char* a = (unsigned char*)m_rawContent.c_str();
-    i64 nLocal = m_rawContent.size();
+    unsigned char* a = (unsigned char*)m_payloadContent.c_str();
+    const unsigned char* pStart = a;
+    i64 nLocal = m_payloadContent.size();
 
     pLimit = &a[nLocal];
     n = decodeVarint(a, &x);
+    m_cellHeaderSize = x;
+    m_cellHeaderSizeStartAddr = offset + n;
+    m_cellHeaderSizeLen = n;
     pData = &a[x];
     a += n;
     i = x - n;
     while( i>0 && pData<=pLimit )
     {
+        SQLite3Variant var;
         n = decodeVarint(a, &x);
+        var.tStartAddr = offset + a - pStart;
+        var.tVal = x;
+        var.tLen = n;
+
         a += n;
         i -= n;
         nLocal -= n;
-        SQLite3Variant var;
         if (x == 0)
         {
             var.type = SQLITE_TYPE_NULL;
+            var.blobStartAddr = 0;
         }
         else if( x>=1 && x<=6 )
         {
@@ -1136,6 +1157,7 @@ bool CSQLite3Payload::DescribeContent()
         }else if( x>=12 )
         {
             i64 size = (x-12)/2;
+            var.tVal = size;
             if( (x&1)==0 )
             {
                 var.type = SQLITE_TYPE_BLOB;
