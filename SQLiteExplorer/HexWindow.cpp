@@ -218,6 +218,7 @@ void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, Conte
     col = 0;
     QStandardItem* firstFreeBlockAddr = new QStandardItem("FirstFreeBlockAddr");
     pghdr->setChild(row, col++, firstFreeBlockAddr);
+    int firstaddr = decode_number((unsigned char*)raw.c_str(), pghdrOffset+1, 2);
     pghdr->setChild(row, col++, new QStandardItem(upperHex(raw, pghdrOffset+1, 2)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(pghdrOffset+1, base)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(2, base)));
@@ -245,7 +246,8 @@ void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, Conte
     row++;
     col = 0;
     pghdr->setChild(row, col++, new QStandardItem("CellCounts"));
-    pghdr->setChild(row, col++, new QStandardItem(QString::number(m_pCurSQLite3DB->m_pSqlite3Page->m_firstFreeBlockAddr)));
+    int ncell = decode_number((unsigned char*)raw.c_str(), pghdrOffset+3, 2);
+    pghdr->setChild(row, col++, new QStandardItem(QString::number(ncell, base)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(pghdrOffset+3, base)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(2, base)));
     pghdr->setChild(row, col++, new QStandardItem(upperHex(raw, pghdrOffset+3, 2)));
