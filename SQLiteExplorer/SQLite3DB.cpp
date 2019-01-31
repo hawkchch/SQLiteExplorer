@@ -27,7 +27,7 @@
 
 /* Print a line of decode output showing a 4-byte integer.
 */
-static int decode_number(unsigned char *aData,      /* Content being decoded */
+int decode_number(unsigned char *aData,      /* Content being decoded */
                               int ofst, int nByte        /* Start and size of decode */)
 {
     int i;
@@ -42,7 +42,7 @@ static int decode_number(unsigned char *aData,      /* Content being decoded */
 ** Convert the var-int format into i64.  Return the number of bytes
 ** in the var-int.  Write the var-int value into *pVal.
 */
-static int decodeVarint(const unsigned char *z, int64_t *pVal){
+int decodeVarint(const unsigned char *z, int64_t *pVal){
     int64_t v = 0;
     int i;
     for(i=0; i<8; i++){
@@ -57,7 +57,7 @@ static int decodeVarint(const unsigned char *z, int64_t *pVal){
 /*
 ** Extract a big-endian 32-bit integer
 */
-static unsigned int decodeInt32(const unsigned char *z){
+unsigned int decodeInt32(const unsigned char *z){
     return (z[0]<<24) + (z[1]<<16) + (z[2]<<8) + z[3];
 }
 

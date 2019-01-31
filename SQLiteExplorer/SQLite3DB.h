@@ -100,6 +100,19 @@ struct PageUsageInfo
 class CSQLite3Page;
 class CSQLite3Payload;
 
+int decode_number(unsigned char *aData,             /* Content being decoded */
+                              int ofst, int nByte   /* Start and size of decode */);
+
+/*
+** Convert the var-int format into i64.  Return the number of bytes
+** in the var-int.  Write the var-int value into *pVal.
+*/
+int decodeVarint(const unsigned char *z, int64_t *pVal);
+/*
+** Extract a big-endian 32-bit integer
+*/
+unsigned int decodeInt32(const unsigned char *z);
+
 class CSQLite3DB : public CppSQLite3DB
 {
     friend class CSQLite3Page;

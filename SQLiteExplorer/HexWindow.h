@@ -32,6 +32,10 @@ public:
     void SetTableName(const QString& name, const QString& tableName, const QString& type);
 
     void setPageHdrData(PageType type, ContentArea& pageHeaderArea, ContentArea& cellidxArea, ContentArea& unusedArea, int pgno, string raw);
+    void setFreeListPageHdrData(ContentArea &sNextTrunkPageNo, int &nNextTrunkPageNo,
+                                ContentArea &sLeafPageCounts, int &nLeafPageCounts,
+                                vector<ContentArea> &sLeafPageNos, vector<int> &nLeafPageNos,
+                                ContentArea &sUnused, string raw);
     void setPageCellData(string raw);
 public slots:
     void onPageIdSelect(int pgno, PageType type);

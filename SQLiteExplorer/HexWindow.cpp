@@ -208,7 +208,7 @@ void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, Conte
     m_pPageViewModel->setItem(pghdr->row(), col++, new QStandardItem(upperHex(raw, pageHeaderArea.m_startAddr, pageHeaderArea.m_len)));
 
     col = 0;
-    pghdr->setChild(row, col++, new QStandardItem("type"));
+    pghdr->setChild(row, col++, new QStandardItem("Type"));
     pghdr->setChild(row, col++, new QStandardItem(m_pageTypeName[type]));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(pghdrOffset, base)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(1, base)));
@@ -216,15 +216,35 @@ void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, Conte
 
     row++;
     col = 0;
-    pghdr->setChild(row, col++, new QStandardItem("firstFreeBlockAddr"));
+    QStandardItem* firstFreeBlockAddr = new QStandardItem("FirstFreeBlockAddr");
+    pghdr->setChild(row, col++, firstFreeBlockAddr);
     pghdr->setChild(row, col++, new QStandardItem(upperHex(raw, pghdrOffset+1, 2)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(pghdrOffset+1, base)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(2, base)));
     pghdr->setChild(row, col++, new QStandardItem(upperHex(raw, pghdrOffset+1, 2)));
 
+    int next = decode_number((unsigned char*)raw.c_str(), pghdrOffset+1, 2);
+    int r = 0;
+    while(next != 0)
+    {
+        int nextAddr = decode_number((unsigned char*)raw.c_str(), pghdrOffset+next, 2);
+        int len = decode_number((unsigned char*)raw.c_str(), pghdrOffset+next+2, 2);
+        string hex = raw.substr(pghdrOffset+next, len);
+
+        col = 0;
+        firstFreeBlockAddr->setChild(r, col++, new QStandardItem(QString("FreeBlock[%1]").arg(r)));
+        firstFreeBlockAddr->setChild(r, col++, new QStandardItem(QString::fromStdString(hex)));
+        firstFreeBlockAddr->setChild(r, col++, new QStandardItem(QString::number(next, base)));
+        firstFreeBlockAddr->setChild(r, col++, new QStandardItem(QString::number(len, base)));
+        firstFreeBlockAddr->setChild(r, col++, new QStandardItem(upperHex(hex, 0, hex.size())));
+        r++;
+        next = nextAddr;
+    }
+
+
     row++;
     col = 0;
-    pghdr->setChild(row, col++, new QStandardItem("cellCounts"));
+    pghdr->setChild(row, col++, new QStandardItem("CellCounts"));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(m_pCurSQLite3DB->m_pSqlite3Page->m_firstFreeBlockAddr)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(pghdrOffset+3, base)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(2, base)));
@@ -232,7 +252,7 @@ void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, Conte
 
     row++;
     col = 0;
-    pghdr->setChild(row, col++, new QStandardItem("startOfCellContentAddr"));
+    pghdr->setChild(row, col++, new QStandardItem("StartOfCellContentAddr"));
     pghdr->setChild(row, col++, new QStandardItem(upperHex(raw, pghdrOffset+5, 2)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(pghdrOffset+5, base)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(2, base)));
@@ -240,7 +260,7 @@ void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, Conte
 
     row++;
     col = 0;
-    pghdr->setChild(row, col++, new QStandardItem("fragmentBytes"));
+    pghdr->setChild(row, col++, new QStandardItem("FragmentBytes"));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(m_pCurSQLite3DB->m_pSqlite3Page->m_fragmentBytes)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(pghdrOffset+7, base)));
     pghdr->setChild(row, col++, new QStandardItem(QString::number(1, base)));
@@ -250,18 +270,18 @@ void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, Conte
     {
         row++;
         col = 0;
-        pghdr->setChild(row, col++, new QStandardItem("rightChild"));
+        pghdr->setChild(row, col++, new QStandardItem("RightChild"));
         pghdr->setChild(row, col++, new QStandardItem(QString::number(m_pCurSQLite3DB->m_pSqlite3Page->m_rightChildPageNumber)));
         pghdr->setChild(row, col++, new QStandardItem(QString::number(pghdrOffset+8, base)));
         pghdr->setChild(row, col++, new QStandardItem(QString::number(1, base)));
         pghdr->setChild(row, col++, new QStandardItem(upperHex(raw, pghdrOffset+8, 4)));
     }
 
-    QStandardItem* cellPtr = new QStandardItem("cellPtr");
+    QStandardItem* cellPtr = new QStandardItem("CellPtr");
     m_pPageViewModel->appendRow(cellPtr);
 
     col = 1;
-    m_pPageViewModel->setItem(cellPtr->row(), col++, new QStandardItem(QString("cellPtr")));
+    m_pPageViewModel->setItem(cellPtr->row(), col++, new QStandardItem(QString("CellPtr")));
     m_pPageViewModel->setItem(cellPtr->row(), col++, new QStandardItem(QString::number(cellidxArea.m_startAddr, base)));
     m_pPageViewModel->setItem(cellPtr->row(), col++, new QStandardItem(QString::number(cellidxArea.m_len, base)));
     m_pPageViewModel->setItem(cellPtr->row(), col++, new QStandardItem(upperHex(raw, cellidxArea.m_startAddr, cellidxArea.m_len)));
@@ -272,36 +292,83 @@ void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, Conte
         int start = cellidxArea.m_startAddr + i*2;
         int len = 2;
 
-        cellPtr->setChild(i, col++, new QStandardItem(QString("cellPtr[%1]").arg(i)));
+        cellPtr->setChild(i, col++, new QStandardItem(QString("CellPtr[%1]").arg(i)));
         cellPtr->setChild(i, col++, new QStandardItem(upperHex(raw, start, len)));
         cellPtr->setChild(i, col++, new QStandardItem(QString::number(start, base)));
         cellPtr->setChild(i, col++, new QStandardItem(QString::number(len, base)));
         cellPtr->setChild(i, col++, new QStandardItem(upperHex(raw, start, len)));
     }
 
-    QStandardItem* unused = new QStandardItem("unusedArea");
+    QStandardItem* unused = new QStandardItem("UnusedArea");
     m_pPageViewModel->appendRow(unused);
     col = 1;
-    m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(QString("unusedArea")));
+    m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(QString("UnusedArea")));
     m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(QString::number(unusedArea.m_startAddr, base)));
     m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(QString::number(unusedArea.m_len, base)));
     m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(upperHex(raw, unusedArea.m_startAddr, unusedArea.m_len)));
 }
 
+void HexWindow::setFreeListPageHdrData(ContentArea &sNextTrunkPageNo, int &nNextTrunkPageNo,
+                                       ContentArea &sLeafPageCounts, int &nLeafPageCounts,
+                                       vector<ContentArea> &sLeafPageNos, vector<int> &nLeafPageNos,
+                                       ContentArea &sUnused, string raw)
+{
+    int base = 10;
+
+    // name, val, start, len, hex
+    QStandardItem* next = new QStandardItem("NextFreeListTrunkPage");
+    m_pPageViewModel->appendRow(next);
+    int col = 1;
+    m_pPageViewModel->setItem(next->row(), col++, new QStandardItem(QString::number(nNextTrunkPageNo, base)));
+    m_pPageViewModel->setItem(next->row(), col++, new QStandardItem(QString::number(sNextTrunkPageNo.m_startAddr, base)));
+    m_pPageViewModel->setItem(next->row(), col++, new QStandardItem(QString::number(sNextTrunkPageNo.m_len, base)));
+    m_pPageViewModel->setItem(next->row(), col++, new QStandardItem(upperHex(raw, sNextTrunkPageNo.m_startAddr, sNextTrunkPageNo.m_len)));
+
+
+    QStandardItem* counts = new QStandardItem("CellCounts");
+    m_pPageViewModel->appendRow(counts);
+    col = 1;
+    m_pPageViewModel->setItem(counts->row(), col++, new QStandardItem(QString::number(nLeafPageCounts, base)));
+    m_pPageViewModel->setItem(counts->row(), col++, new QStandardItem(QString::number(sLeafPageCounts.m_startAddr, base)));
+    m_pPageViewModel->setItem(counts->row(), col++, new QStandardItem(QString::number(sLeafPageCounts.m_len, base)));
+    m_pPageViewModel->setItem(counts->row(), col++, new QStandardItem(upperHex(raw, sLeafPageCounts.m_startAddr, sLeafPageCounts.m_len)));
+
+    QStandardItem* cells = new QStandardItem("Cells");
+    m_pPageViewModel->appendRow(cells);
+    for(int row=0; row<sLeafPageNos.size(); row++)
+    {
+        const ContentArea& area = sLeafPageNos[row];
+        col = 0;
+        cells->setChild(row, col++, new QStandardItem(QString("Cell[%1]").arg(row)));
+        cells->setChild(row, col++, new QStandardItem(QString::number(nLeafPageNos[row], base)));
+        cells->setChild(row, col++, new QStandardItem(QString::number(area.m_startAddr, base)));
+        cells->setChild(row, col++, new QStandardItem(QString::number(area.m_len, base)));
+        cells->setChild(row, col++, new QStandardItem(upperHex(raw, area.m_startAddr, area.m_len)));
+    }
+
+    QStandardItem* unused = new QStandardItem("UnusedArea");
+    m_pPageViewModel->appendRow(unused);
+    col = 1;
+    m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(QString("UnusedArea")));
+    m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(QString::number(sUnused.m_startAddr, base)));
+    m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(QString::number(sUnused.m_len, base)));
+    m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(upperHex(raw, sUnused.m_startAddr, sUnused.m_len)));
+}
+
 void HexWindow::setPageCellData(string raw)
 {
     int base = 10;
-    QStandardItem* cells = new QStandardItem("cells");
+    QStandardItem* cells = new QStandardItem("Cells");
     m_pPageViewModel->appendRow(cells);
 
     int col = 1;
-    m_pPageViewModel->setItem(cells->row(), col++, new QStandardItem(QString("cells")));
+    m_pPageViewModel->setItem(cells->row(), col++, new QStandardItem(QString("Cells")));
 
     for(int row=0; row<m_payloadArea.size(); row++)
     {
         const ContentArea& area = m_payloadArea[row];
         col = 0;
-        cells->setChild(row, col++, new QStandardItem(QString("cell[%1]").arg(row)));
+        cells->setChild(row, col++, new QStandardItem(QString("Cell[%1]").arg(row)));
         cells->setChild(row, col++, new QStandardItem(QString::fromStdString(raw.substr(area.m_startAddr, area.m_len))));
         cells->setChild(row, col++, new QStandardItem(QString::number(area.m_startAddr, base)));
         cells->setChild(row, col++, new QStandardItem(QString::number(area.m_len, base)));
@@ -677,7 +744,11 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
             m_pTableWdiget->setItem(i,0,name);
         }
 
+
+        setFreeListPageHdrData(sNextTrunkPageNo, nNextTrunkPageNo,
+            sLeafPageCounts,nLeafPageCounts,sLeafPageNos,nLeafPageNos,sUnused, raw);
         m_payloadArea = sLeafPageNos;
+
     }
     else
     {
@@ -686,7 +757,9 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
     }
 
     setPushBtnStats();
-    setPageCellData(raw);
+
+    if(type != PAGE_TYPE_FREELIST_TRUNK)
+        setPageCellData(raw);
 
     m_pPageView->expandAll();
 }
