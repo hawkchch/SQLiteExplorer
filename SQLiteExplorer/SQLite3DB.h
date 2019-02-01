@@ -32,7 +32,7 @@ enum SQLite3DataType
 struct SQLite3Variant 
 {
 public:
-    SQLite3Variant():iVal(0), lfVal(0), blobStartAddr(0), tVal(0), tStartAddr(0), tLen(0)
+    SQLite3Variant():iVal(0), lfVal(0), valStartAddr(0), valLen(0), tVal(0), tStartAddr(0), tLen(0)
     {}
     int getInt(int nNullValue=0);
     sqlite_int64 getInt64(sqlite_int64 nNullValue=0);
@@ -48,8 +48,8 @@ public:
     string blob;
     string text;
 
-    int blobStartAddr;
-    //int blobLen;
+    int valStartAddr;
+    i64 valLen;
 
     // typeAndLen字段
     string  tBlob;
@@ -333,7 +333,7 @@ public:
     int GetLeftChild(){return m_leftChild;}
     i64 GetRowid(){return m_rowid;}
 
-private:
+
     CSQLite3Page* m_pParent;
     string m_cellContent;
     string m_payloadContent;

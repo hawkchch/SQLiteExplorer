@@ -38,7 +38,9 @@ public:
                                 ContentArea &sUnused, string raw);
     void setPageCellData(string raw);
 
-    QStandardItem* GetItem(int start, int len, QString txt);
+    QStandardItem *setCellData(QStandardItem *parentItem, CSQLite3Payload& payload, ContentArea area, string raw);
+
+    QStandardItem* GetItem(int start, i64 len, QString txt);
 public slots:
     void onPageIdSelect(int pgno, PageType type);
     void onPageTypeChanged(const QString& item);

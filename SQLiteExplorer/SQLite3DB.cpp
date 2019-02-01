@@ -1050,7 +1050,7 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
         n += i;
     }
 
-    m_cellContent.assign((const char*)a-n, n);
+    m_cellContent.assign((const char*)(a-n), n);
     m_payloadContent.assign((const char*)a, m_nLocal);
     if( m_nLocal<m_nPayload ){
         int ovfl = decodeInt32(a + m_nLocal);
@@ -1067,14 +1067,13 @@ void CSQLite3Payload::DescribeCell(unsigned char cType, /* Page type */
             sqlite3_free(a);
         }
         m_payloadContent = m_payloadContent.substr(0, m_nPayload);
-        m_cellContent += m_payloadContent;
-
 //         unsigned char *b = &a[m_nLocal];
 //         ovfl = ((b[0]*256 + b[1])*256 + b[2])*256 + b[3];
 //         //sprintf(&zDesc[nDesc], "ov: %d ", ovfl);
 //         //nDesc += strlen(&zDesc[nDesc]);
 //         n += 4;
     }
+    m_cellContent += m_payloadContent;
     if(cType!=5 ){
         nDesc += DescribeContent();
     }
@@ -1101,8 +1100,10 @@ bool CSQLite3Payload::DescribeContent()
     pLimit = &a[nLocal];
     n = decodeVarint(a, &x);
     m_cellHeaderSize = x;
-    m_cellHeaderSizeStartAddr = offset + n;
+    m_cellHeaderSizeStartAddr = offset;
     m_cellHeaderSizeLen = n;
+
+    qDebug() << x << offset << n;
     pData = &a[x];
     a += n;
     i = x - n;
@@ -1120,11 +1121,21 @@ bool CSQLite3Payload::DescribeContent()
         if (x == 0)
         {
             var.type = SQLITE_TYPE_NULL;
-            var.blobStartAddr = 0;
         }
         else if( x>=1 && x<=6 )
         {
             v = (signed char)pData[0];
+            var.valStartAddr = offset + pData - pStart;
+            switch( x )
+            {
+            case 6:  var.valLen = 8; break; // Value is a big-endian 64-bit twos-complement integer
+            case 5:  var.valLen = 6; break; // Value is a big-endian 48-bit twos-complement integer
+            case 4:  var.valLen = 4; break; // Value is a big-endian 32-bit twos-complement integer
+            case 3:  var.valLen = 3; break; // Value is a big-endian 24-bit twos-complement integer
+            case 2:  var.valLen = 2; break; // Value is a big-endian 26-bit twos-complement integer
+            case 1:  var.valLen = 1; break; // Value is an 8-bit twos-complement integer
+            }
+
             pData++;
             switch( x )
             {
@@ -1136,10 +1147,12 @@ bool CSQLite3Payload::DescribeContent()
             }
             var.type = SQLITE_TYPE_INTEGER;
             var.iVal = v;
-            
             //sprintf(zDesc, "%lld", v);
         }else if( x==7 )
         {
+            var.valStartAddr = offset + pData - pStart;
+            var.valLen = 8;
+
             //sprintf(zDesc, "real");
             var.type = SQLITE_TYPE_FLOAT;
             memcpy((void*)&var.lfVal, (void*)pData, 8); // FIX
@@ -1157,7 +1170,9 @@ bool CSQLite3Payload::DescribeContent()
         }else if( x>=12 )
         {
             i64 size = (x-12)/2;
-            var.tVal = size;
+            var.valStartAddr = offset + pData - pStart;
+            var.valLen = size;
+
             if( (x&1)==0 )
             {
                 var.type = SQLITE_TYPE_BLOB;

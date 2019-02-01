@@ -378,7 +378,137 @@ void HexWindow::setPageCellData(string raw)
     }
 }
 
-QStandardItem *HexWindow::GetItem(int start, int len, QString txt)
+QStandardItem* HexWindow::setCellData(QStandardItem* parentItem, CSQLite3Payload &payload, ContentArea area, string raw)
+{
+    int base = 10;
+    QStandardItem* cells = parentItem;
+    if(cells == NULL)
+    {
+        cells = new QStandardItem("Cells");
+        m_pPageViewModel->appendRow(cells);
+    }
+
+    qDebug() << "1";
+    int col = 0;
+    int row = cells->rowCount();
+    QStandardItem* cell = new QStandardItem(QString("Cell[%1]").arg(row));
+    cells->setChild(row, col++, cell);
+    cells->setChild(row, col++, new QStandardItem(QString::fromStdString(raw.substr(area.m_startAddr, area.m_len))));
+    cells->setChild(row, col++, new QStandardItem(QString::number(area.m_startAddr, base)));
+    cells->setChild(row, col++, new QStandardItem(QString::number(area.m_len, base)));
+    cells->setChild(row, col++, new QStandardItem(upperHex(raw, area.m_startAddr, area.m_len)));
+
+    qDebug() << "2";
+    int offset = area.m_startAddr;
+    row = col = 0;
+    // leftChild
+    if(payload.m_leftChildLen > 0)
+    {
+        cell->setChild(row, col++, GetItem(payload.m_leftChildStartAddr + offset, payload.m_leftChildLen, "LeftChild"));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_leftChild, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_leftChildStartAddr + offset, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_leftChildLen, base)));
+        cell->setChild(row, col++, new QStandardItem(upperHex(payload.m_cellContent, payload.m_leftChildStartAddr, payload.m_leftChildLen)));
+        row++;
+        col = 0;
+    }
+
+    qDebug() << "3";
+    // payloadSize
+    if(payload.m_nPayloadLen > 0)
+    {
+        cell->setChild(row, col++, GetItem(payload.m_nPayloadStartAddr + offset, payload.m_nPayloadLen, "PayloadSize"));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_nPayload, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_nPayloadStartAddr + offset, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_nPayloadLen, base)));
+        cell->setChild(row, col++, new QStandardItem(upperHex(payload.m_cellContent, payload.m_nPayloadStartAddr, payload.m_nPayloadLen)));
+        row++;
+        col = 0;
+    }
+
+    qDebug() << "4";
+    // rowid
+    if(payload.m_rowidLen > 0)
+    {
+        cell->setChild(row, col++, GetItem(payload.m_rowidStartAddr + offset, payload.m_rowidLen, "RowID"));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_rowid, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_rowidStartAddr + offset, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_rowidLen, base)));
+        cell->setChild(row, col++, new QStandardItem(upperHex(payload.m_cellContent, payload.m_rowidStartAddr, payload.m_rowidLen)));
+        row++;
+        col = 0;
+    }
+
+    qDebug() << "5";
+    // cellHeaderSize
+    if(payload.m_cellHeaderSizeLen > 0)
+    {
+        qDebug() << "HeaderSize:" << payload.m_cellHeaderSize
+                 << "startAddr:" << payload.m_cellHeaderSizeStartAddr << "offset:" << offset
+                 << "len:" << payload.m_cellHeaderSizeLen;
+        cell->setChild(row, col++, GetItem(payload.m_cellHeaderSizeStartAddr + offset, payload.m_cellHeaderSizeLen, "CellHeaderSize"));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_cellHeaderSize, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_cellHeaderSizeStartAddr + offset, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(payload.m_cellHeaderSizeLen, base)));
+        cell->setChild(row, col++, new QStandardItem(upperHex(payload.m_cellContent, payload.m_cellHeaderSizeStartAddr, payload.m_cellHeaderSizeLen)));
+        row++;
+        col = 0;
+    }
+
+    qDebug() << "6";
+    // typeAndLen
+    for(int i=0; i<payload.m_datas.size(); i++)
+    {
+        SQLite3Variant& var = payload.m_datas[i];
+        cell->setChild(row, col++, GetItem(var.tStartAddr + offset, var.tLen>payload.m_nLocal?payload.m_nLocal:var.tLen, QString("TypaAndLen[%1]").arg(i)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(var.tVal, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(var.tStartAddr + offset, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(var.tLen, base)));
+        cell->setChild(row, col++, new QStandardItem(upperHex(payload.m_cellContent, var.tStartAddr, var.tLen)));
+
+        row++;
+        col = 0;
+    }
+
+    qDebug() << "7";
+    // VariableContent
+    for(int i=0; i<payload.m_datas.size(); i++)
+    {
+        SQLite3Variant var = payload.m_datas[i];
+        cell->setChild(row, col++, GetItem(var.valStartAddr + offset, var.valLen>payload.m_nLocal?payload.m_nLocal:var.valLen, QString("Variable[%1]").arg(i)));
+        QString val;
+        switch (var.type) {
+        case SQLITE_TYPE_INTEGER:
+            val = QString("%1").arg(var.iVal);
+            break;
+        case SQLITE_TYPE_FLOAT:
+            val = QString("%1").arg(var.lfVal);
+            break;
+        case SQLITE_TYPE_TEXT:
+            val = QString::fromStdString(var.text);
+            break;
+        case SQLITE_TYPE_NULL:
+            val = "(null)";
+            break;
+        case SQLITE_TYPE_BLOB:
+            val = QString::fromStdString(var.text);
+            break;
+        default:
+            break;
+        }
+
+        cell->setChild(row, col++, new QStandardItem(val));
+        cell->setChild(row, col++, new QStandardItem(QString::number(var.valLen==0?0:var.valStartAddr+offset, base)));
+        cell->setChild(row, col++, new QStandardItem(QString::number(var.valLen, base)));
+        cell->setChild(row, col++, new QStandardItem(upperHex(payload.m_cellContent, var.valStartAddr, var.valLen)));
+
+        row++;
+        col = 0;
+    }
+    return cells;
+}
+
+QStandardItem *HexWindow::GetItem(int start, i64 len, QString txt)
 {
     qDebug() << start << len << txt;
     QStandardItem* item = new QStandardItem(txt);
@@ -474,6 +604,7 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
         m_pCurSQLite3DB->GetTablePrimaryKey(m_curTableName.toStdString(), pkFiledName, pkType, pkIdx, withoutRowid);
     }
 
+    QStandardItem* cellContentParentItem = NULL;
     // 将该页中所有数据填充到m_pTableWdiget中
     if(type == PAGE_TYPE_TABLE_INTERIOR)
     {
@@ -491,6 +622,7 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
             int idx = it - m_payloadArea.begin();
             vector<SQLite3Variant> vars;
             m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
+            cellContentParentItem = setCellData(cellContentParentItem, *m_pCurSQLite3DB->m_pSqlite3Payload, *it, raw);
 
             int leftChild = m_pCurSQLite3DB->m_pSqlite3Payload->GetLeftChild();
             i64 rowid = m_pCurSQLite3DB->m_pSqlite3Payload->GetRowid();
@@ -515,6 +647,7 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
             int idx = it - m_payloadArea.begin();
             vector<SQLite3Variant> vars;
             m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
+            cellContentParentItem = setCellData(cellContentParentItem, *m_pCurSQLite3DB->m_pSqlite3Payload, *it, raw);
 
             //qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
 
@@ -579,7 +712,7 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
             m_pTableWdiget->setHorizontalHeaderLabels(headers);
             setHeaders = true;
 
-            qDebug() << headers.size();
+            //qDebug() << headers.size();
         }
 
         m_pTableWdiget->setRowCount(m_payloadArea.size());
@@ -589,7 +722,7 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
             int idx = it - m_payloadArea.begin();
             vector<SQLite3Variant> vars;
             m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
-
+            cellContentParentItem = setCellData(cellContentParentItem, *m_pCurSQLite3DB->m_pSqlite3Payload, *it, raw);
             //qDebug() << "m_pCurSQLite3DB->DecodeCell(pgno, idx, vars) [" << pgno << "," << idx << "," << vars.size() << "]";
 
             if(!setHeaders)
@@ -674,7 +807,7 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
             int idx = it - m_payloadArea.begin();
             vector<SQLite3Variant> vars;
             m_pCurSQLite3DB->DecodeCell(pgno, idx, vars);
-
+            cellContentParentItem = setCellData(cellContentParentItem, *m_pCurSQLite3DB->m_pSqlite3Payload, *it, raw);
             if(!setHeaders)
             {
                 for(size_t i=0; i<vars.size()-1; i++)
@@ -775,8 +908,8 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
 
     setPushBtnStats();
 
-    if(type != PAGE_TYPE_FREELIST_TRUNK)
-        setPageCellData(raw);
+    //if(type != PAGE_TYPE_FREELIST_TRUNK)
+    //    setPageCellData(raw);
 
     m_pPageView->expandAll();
 }
@@ -871,8 +1004,8 @@ void HexWindow::onCurrentAddressChanged(qint64 address)
         }
     }
 
-    qDebug() << "onCurrentAddressChanged" << address;
-    qDebug() << m_mapItems.size();
+    //qDebug() << "onCurrentAddressChanged" << address;
+    //qDebug() << m_mapItems.size();
     if(m_mapItems.contains(address))
     {
         m_pPageView->setCurrentIndex(m_mapItems[address]->index());
