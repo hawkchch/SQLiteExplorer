@@ -37,6 +37,8 @@ public:
                                 vector<ContentArea> &sLeafPageNos, vector<int> &nLeafPageNos,
                                 ContentArea &sUnused, string raw);
     void setPageCellData(string raw);
+
+    QStandardItem* GetItem(int start, int len, QString txt);
 public slots:
     void onPageIdSelect(int pgno, PageType type);
     void onPageTypeChanged(const QString& item);
@@ -74,6 +76,8 @@ private:
 
     QMap<PageType, QString> m_pageTypeName;
     QStringList m_pageNoAndTypes;
+
+    QMap<int, QStandardItem*> m_mapItems;
 };
 
 #endif // QHEXWINDOW_H

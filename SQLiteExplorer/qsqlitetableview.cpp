@@ -75,7 +75,7 @@ void QSQLiteTableView::onSQLiteQueryReceived(const QString &sql)
             msg = QString("数据加载完成，共加载%1条记录").arg(rowCount());
         }
         emit dataLoaded(msg);
-        qDebug() << msg;
+        //qDebug() << msg;
     }
     catch(CppSQLite3Exception& e)
     {
@@ -117,6 +117,6 @@ void QSQLiteTableView::onValueChanged(int value)
             msg = QString("数据加载完成，共加载%1条记录").arg(rowCount());
         }
         emit dataLoaded(msg);
-        qDebug() << msg;
+        //qDebug() << msg;
     }
 }

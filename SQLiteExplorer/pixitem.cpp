@@ -75,7 +75,7 @@ void PixItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     {
         s = pow(1 / 1.1, -m_scaleValue);      //缩小
     }
-    qDebug() << "mousePressEvent: s =" << s << ", BoundingRect =" << boundingRect() << ", startPos =" << m_startPos;
+    //qDebug() << "mousePressEvent: s =" << s << ", BoundingRect =" << boundingRect() << ", startPos =" << m_startPos;
     setScale(s);
 }
 
@@ -131,7 +131,7 @@ void PixItem::wheelEvent(QGraphicsSceneWheelEvent *event)
     {
         s = pow(1 / 1.1, -m_scaleValue);      //缩小
     }
-    qDebug() << "wheelEvent: s=" << s << ", m_scaleValue = " << m_scaleValue;
+    //qDebug() << "wheelEvent: s=" << s << ", m_scaleValue = " << m_scaleValue;
     setScale(s);
     setTransformOriginPoint(event->pos().x(), event->pos().y());
 }
@@ -154,7 +154,7 @@ void PixItem::setScaleValue(const int &scaleValue)
         s = pow(1 / 1.1, -m_scaleValue);      //缩小
     }
 
-    qDebug() << "setScaleValue:" << s;
+    //qDebug() << "setScaleValue:" << s;
     setScale(s);
 }
 
@@ -164,7 +164,7 @@ void PixItem::setZoomState(const int &zoomState)
     if (m_zoomState == RESET)
     {
         m_scaleValue = 0;
-        qDebug() << "setZoomState:" << 1;
+        //qDebug() << "setZoomState:" << 1;
         setScale(1);
         setTransformOriginPoint(0, 0);
     }
