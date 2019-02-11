@@ -870,7 +870,7 @@ void CSQLite3Page::DecodePage()
         int cofst = iCellPtr + i*2;
         int64_t n;
         cofst = decode_number(a, cofst, 2);
-        n = GetPayloadSize(m_cType, &a[cofst]);
+        n = GetPayloadSize(m_cType, (unsigned char*)&m_pageRawContent[cofst]);
 
         ContentArea area;
         area.m_startAddr = cofst;
