@@ -30,7 +30,10 @@ HexWindow::HexWindow(QWidget *parent) :
     m_pPageView = new QTreeView(this);
     m_pPageViewModel = new QStandardItemModel(m_pPageView);
     m_pPageView->setModel(m_pPageViewModel);
-    m_pPageView->setEditTriggers(QAbstractItemView::NoEditTriggers); // 设置不可编辑
+    //m_pPageView->setEditTriggers(QAbstractItemView::NoEditTriggers); // 设置不可编辑
+    m_pPageView->setAlternatingRowColors(true);
+    m_pPageView->setStyleSheet("QTableView{background-color: rgb(250, 250, 115);"
+        "alternate-background-color: rgb(141, 163, 215);}");
 
 
     m_pHSplitter->addWidget(m_pHexEdit);
@@ -614,11 +617,11 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
     if(type == PAGE_TYPE_TABLE_INTERIOR)
     {
         m_pTableWdiget->setColumnCount(2);
-        QString pkName = "Rowid";
+        QString pkName = "RowID";
         if(pkFiledName.size() == 1) pkName = QString::fromStdString(pkFiledName[0]);
 
         QStringList tableHeaders;
-        tableHeaders << "LeftChildPageNo" << pkName;
+        tableHeaders << "LeftChild" << pkName;
         m_pTableWdiget->setHorizontalHeaderLabels(tableHeaders);
         m_pTableWdiget->setRowCount(m_payloadArea.size());
 
@@ -695,14 +698,14 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
     else if(type == PAGE_TYPE_INDEX_INTERIOR)
     {
         QStringList headers = m_tableHeaders;
-        QString pkName = "Rowid";
+        QString pkName = "RowID";
         if(pkFiledName.size() == 1) pkName = QString::fromStdString(pkFiledName[0]);
         // 当主键和索引列名称一样时，取pkName为Rowid
         if(headers.size() == 1)
         {
-            if(headers[0] == pkName) pkName = "Rowid";
+            if(headers[0] == pkName) pkName = "RowID";
         }
-        else if(headers.empty()) pkName = "Rowid";
+        else if(headers.empty()) pkName = "RowID";
 
         // 如果建表时，使用了WITHOUT ROWID，对应表类型会是Index Interior/Index Leaf
         // 这时就不需要把主键名称放到后面
@@ -711,7 +714,7 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
         bool setHeaders = false;
         if(headers.size() > 0)
         {
-            headers.push_front("LeftChildPageNo");
+            headers.push_front("LeftChild");
             if(pkName.size() > 0) headers.push_back(pkName);
             m_pTableWdiget->setColumnCount(headers.size());
             m_pTableWdiget->setHorizontalHeaderLabels(headers);
@@ -732,7 +735,7 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
 
             if(!setHeaders)
             {
-                headers.push_back("LeftChildPageNo");
+                headers.push_back("LeftChild");
                 for(size_t i=0; i<vars.size()-1; i++)
                 {
                     headers.push_back(QString("%1").arg(i));
@@ -783,14 +786,14 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
         QStringList headers = m_tableHeaders;
 
         // 对应主键名称
-        QString pkName = "Rowid";
+        QString pkName = "RowID";
         if(pkFiledName.size() == 1) pkName = QString::fromStdString(pkFiledName[0]);
         // 当主键和索引列名称一样时，取pkName为Rowid
         if(headers.size() == 1)
         {
-            if(headers[0] == pkName) pkName = "Rowid";
+            if(headers[0] == pkName) pkName = "RowID";
         }
-        else if(headers.empty()) pkName = "Rowid";
+        else if(headers.empty()) pkName = "RowID";
 
         // 如果建表时，使用了WITHOUT ROWID，对应表类型会是Index Interior/Index Leaf
         // 这时就不需要把主键名称放到后面
