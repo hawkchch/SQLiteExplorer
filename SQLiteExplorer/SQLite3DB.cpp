@@ -901,6 +901,8 @@ void CSQLite3Page::DecodePage()
         int ofst = next;
         area.m_startAddr = ofst;
         next = decode_number(a, ofst, 2);
+        if(next >= m_pParent->m_pagesize)
+            break;
         area.m_len = decode_number(a, ofst+2, 2);
         m_freeSpaceArea.push_back(area);
     }

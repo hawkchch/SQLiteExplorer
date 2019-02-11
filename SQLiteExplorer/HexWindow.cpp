@@ -228,9 +228,14 @@ void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, Conte
     int r = 0;
     while(next != 0)
     {
-        int nextAddr = decode_number((unsigned char*)raw.c_str(), pghdrOffset+next, 2);
-        int len = decode_number((unsigned char*)raw.c_str(), pghdrOffset+next+2, 2);
-        string hex = raw.substr(pghdrOffset+next, len);
+        if(next >= m_pCurSQLite3DB->GetPageSize())
+        {
+            qDebug() << "Error Occured";
+            break;
+        }
+        int nextAddr = decode_number((unsigned char*)raw.c_str(), next, 2);
+        int len = decode_number((unsigned char*)raw.c_str(), next+2, 2);
+        string hex = raw.substr(next, len);
 
         col = 0;
         firstFreeBlockAddr->setChild(r, col++, GetItem(next, len, QString("FreeBlock[%1]").arg(r)));
