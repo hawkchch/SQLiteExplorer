@@ -36,7 +36,6 @@ public:
                                 ContentArea &sLeafPageCounts, int &nLeafPageCounts,
                                 vector<ContentArea> &sLeafPageNos, vector<int> &nLeafPageNos,
                                 ContentArea &sUnused, string raw);
-    void setPageCellData(string raw);
 
     QStandardItem *setCellData(QStandardItem *parentItem, CSQLite3Payload& payload, ContentArea area, string raw);
 

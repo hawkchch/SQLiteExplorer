@@ -365,26 +365,6 @@ void HexWindow::setFreeListPageHdrData(ContentArea &sNextTrunkPageNo, int &nNext
     m_pPageViewModel->setItem(unused->row(), col++, new QStandardItem(upperHex(raw, sUnused.m_startAddr, sUnused.m_len)));
 }
 
-void HexWindow::setPageCellData(string raw)
-{
-    int base = 10;
-    QStandardItem* cells = new QStandardItem("Cells");
-    m_pPageViewModel->appendRow(cells);
-
-    int col = 1;
-    m_pPageViewModel->setItem(cells->row(), col++, new QStandardItem(QString("Cells")));
-
-    for(int row=0; row<m_payloadArea.size(); row++)
-    {
-        const ContentArea& area = m_payloadArea[row];
-        col = 0;
-        cells->setChild(row, col++, GetItem(area.m_startAddr, area.m_len, QString("Cell[%1]").arg(row)));
-        cells->setChild(row, col++, new QStandardItem(QString::fromStdString(raw.substr(area.m_startAddr, area.m_len))));
-        cells->setChild(row, col++, new QStandardItem(QString::number(area.m_startAddr, base)));
-        cells->setChild(row, col++, new QStandardItem(QString::number(area.m_len, base)));
-        cells->setChild(row, col++, new QStandardItem(upperHex(raw, area.m_startAddr, area.m_len)));
-    }
-}
 
 QStandardItem* HexWindow::setCellData(QStandardItem* parentItem, CSQLite3Payload &payload, ContentArea area, string raw)
 {
@@ -401,7 +381,9 @@ QStandardItem* HexWindow::setCellData(QStandardItem* parentItem, CSQLite3Payload
     int row = cells->rowCount();
     QStandardItem* cell = new QStandardItem(QString("Cell[%1]").arg(row));
     cells->setChild(row, col++, cell);
-    cells->setChild(row, col++, new QStandardItem(QString::fromStdString(raw.substr(area.m_startAddr, area.m_len))));
+    QString cellDesc = QString::fromStdString(raw.substr(area.m_startAddr, area.m_len));
+    cellDesc = cellDesc.remove("\r").remove("\n");
+    cells->setChild(row, col++, new QStandardItem(cellDesc));
     cells->setChild(row, col++, new QStandardItem(QString::number(area.m_startAddr, base)));
     cells->setChild(row, col++, new QStandardItem(QString::number(area.m_len, base)));
     cells->setChild(row, col++, new QStandardItem(upperHex(raw, area.m_startAddr, area.m_len)));
@@ -915,9 +897,6 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
     }
 
     setPushBtnStats();
-
-    //if(type != PAGE_TYPE_FREELIST_TRUNK)
-    //    setPageCellData(raw);
 
     m_pPageView->expandAll();
 }
