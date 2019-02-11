@@ -545,12 +545,13 @@ void MainWindow::OnTreeViewClick(const QModelIndex& index)
 
             if(info.type == PAGE_TYPE_OVERFLOW)
             {
-                // 因为PageNo是从1开始计数，所以此处cellno也从1开始计数
+                // PageNo是从1开始计数
+                // 此处cell_idx从0开始计数
                 content.push_back(QString("%1[color=\"%2\", label=\"%1 overflow %3 from cell %4\"];")
                                   .arg(info.pgno)
                                   .arg(color)
                                   .arg(info.overflow_page_idx)
-                                  .arg(info.overflow_cell_idx + 1));
+                                  .arg(info.overflow_cell_idx));
             }
             else
             {
