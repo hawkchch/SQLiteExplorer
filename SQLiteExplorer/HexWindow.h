@@ -50,6 +50,7 @@ public slots:
     void onLastBtnClicked();
 
     void onCurrentAddressChanged(qint64 address);
+    void onCheckBoxStatChanged(bool stat);
 
 private:
     void setPushBtnStats();
@@ -79,6 +80,7 @@ private:
     QStringList m_pageNoAndTypes;
 
     QMap<int, QStandardItem*> m_mapItems;
+    uint m_curPageNo;
 };
 
 #endif // QHEXWINDOW_H

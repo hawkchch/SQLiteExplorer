@@ -14,6 +14,8 @@ HexWindow::HexWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    m_curPageNo = 0;
+
     // Init Splitter
     m_pHSplitter = new QSplitter(Qt::Horizontal);
     //m_pHSplitter->setStretchFactor(1, 1);
@@ -71,6 +73,8 @@ HexWindow::HexWindow(QWidget *parent) :
     connect(ui->pushButtonNext, SIGNAL(clicked(bool)), this, SLOT(onNextBtnClicked()));
     connect(ui->pushButtonFirst, SIGNAL(clicked(bool)), this, SLOT(onFirstBtnClicked()));
     connect(ui->pushButtonLast, SIGNAL(clicked(bool)), this, SLOT(onLastBtnClicked()));
+
+    connect(ui->checkBox, SIGNAL(clicked(bool)), this, SLOT(onCheckBoxStatChanged(bool)));
 
     m_pageTypeName[PAGE_TYPE_UNKNOWN] = "Unknown";
     m_pageTypeName[PAGE_TYPE_INDEX_INTERIOR] = "IndexInterior";
@@ -520,6 +524,7 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
     // 初始化PageViewModel
     m_pPageViewModel->clear();
     m_mapItems.clear();
+    m_curPageNo = pgno;
 
     QStringList headers;
     headers << "Name" << "Desc" << "Start" << "Len" << "Hex";
@@ -546,7 +551,8 @@ void HexWindow::onPageIdSelect(int pgno, PageType type)
     document->clearComments();
     document->clearMetadata();
 
-    document->setBaseAddress((pgno-1)*m_pCurSQLite3DB->GetPageSize());
+    if(ui->checkBox->checkState() == Qt::Checked) document->setBaseAddress((pgno-1)*m_pCurSQLite3DB->GetPageSize());
+    else document->setBaseAddress(0);
 
     // Bulk metadata management (paints only one time)
     m_payloadArea.clear();
@@ -997,6 +1003,23 @@ void HexWindow::onCurrentAddressChanged(qint64 address)
     {
         m_pPageView->setCurrentIndex(m_mapItems[address]->index());
     }
+}
+
+void HexWindow::onCheckBoxStatChanged(bool stat)
+{
+    QHexDocument* document = m_pHexEdit->document();
+    if(document == NULL) return;
+    if(stat)
+    {
+        document->setBaseAddress((m_curPageNo-1)*m_pCurSQLite3DB->GetPageSize());
+    }
+    else
+    {
+        document->setBaseAddress(0);
+    }
+
+    document->beginMetadata();
+    document->endMetadata();
 }
 
 void HexWindow::setPushBtnStats()
