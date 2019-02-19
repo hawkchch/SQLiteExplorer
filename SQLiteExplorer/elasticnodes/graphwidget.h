@@ -66,6 +66,8 @@ public:
     void SetPath(QString path);
     void itemMoved();
 
+    void clear();
+
 public slots:
     void shuffle();
     void zoomIn();

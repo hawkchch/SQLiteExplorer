@@ -177,6 +177,11 @@ void GraphWidget::itemMoved()
     if (!timerId)
         timerId = startTimer(1000 / 25);
 }
+
+void GraphWidget::clear()
+{
+    scene()->clear();
+}
 //! [2]
 
 //! [3]

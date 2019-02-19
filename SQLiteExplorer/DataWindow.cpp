@@ -17,6 +17,14 @@ DataWindow::~DataWindow()
     delete ui;
 }
 
+void DataWindow::clear()
+{
+    ui->tableWidget->clear();
+    ui->tableWidget->setRowCount(0);
+    ui->tableWidget->setColumnCount(0);
+    ui->label->clear();
+}
+
 void DataWindow::onSQLiteQueryReceived(const QString &sql)
 {
     if(m_pParent)

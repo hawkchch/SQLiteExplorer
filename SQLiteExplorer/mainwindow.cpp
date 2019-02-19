@@ -189,13 +189,8 @@ void MainWindow::onOpenActionTriggered()
 
 void MainWindow::onCloseActionTriggered()
 {
-    if(m_mapSqlite3DBs.size() == 0)
-    {
-        return;
-    }
-
     QString path = m_mapSqlite3DBs.key(m_pCurSQLite3DB);
-    if (path.size())
+    if (path.size() && m_pCurSQLite3DB)
     {
         delete m_pCurSQLite3DB;
         m_mapSqlite3DBs.remove(path);
@@ -211,6 +206,18 @@ void MainWindow::onCloseActionTriggered()
                 break;
             }
         }
+    }
+
+    if(m_mapSqlite3DBs.size() == 0)
+    {
+        m_pCurSQLite3DB = NULL;
+        m_pDatabase->clear();
+        m_pData->clear();
+        m_pDesign->clear();
+        m_pDesign->setRowCount(0);
+        m_pHexWindow->clear();
+        m_pDDL->clear();
+        m_pGraph->clear();
     }
 }
 

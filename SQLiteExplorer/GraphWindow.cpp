@@ -27,6 +27,12 @@ GraphWindow::~GraphWindow()
     delete ui;
 }
 
+void GraphWindow::clear()
+{
+    m_graphicsScene->clear();
+    ui->graphWidget;
+}
+
 void GraphWindow::SetPath(QString path)
 {
     if(path == "tmp.plain")

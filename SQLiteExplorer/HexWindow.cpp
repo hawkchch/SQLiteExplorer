@@ -92,29 +92,15 @@ HexWindow::~HexWindow()
     delete ui;
 }
 
-void HexWindow::SetPageNos(const vector<int> &pgnos)
+void HexWindow::clear()
 {
-    if (m_pParent)
-    {
-        m_pCurSQLite3DB = m_pParent->GetCurSQLite3DB();
-    }
-    else
-    {
-        return;
-    }
-
     ui->comboBox->clear();
-    QStringList ids;
-    for(auto it=pgnos.begin(); it!=pgnos.end(); ++it)
-    {
-        ids.push_back(QString("%1").arg(*it));
-    }
-    // 清空TableWidget中内容
+    ui->comboBoxPageType->clear();
+    m_pageNoAndTypes.clear();
+
     m_pTableWdiget->clear();
     m_pTableWdiget->setColumnCount(0);
-
-    ui->comboBox->addItems(ids);
-    ui->comboBox->setCurrentIndex(0);
+    m_pPageViewModel->clear();
 }
 
 void HexWindow::SetPageNosAndType(const vector<pair<int, PageType> > &pgs)
@@ -123,8 +109,9 @@ void HexWindow::SetPageNosAndType(const vector<pair<int, PageType> > &pgs)
     {
         m_pCurSQLite3DB = m_pParent->GetCurSQLite3DB();
     }
-    else
+    if(m_pParent == NULL || pgs.empty() || m_pCurSQLite3DB == NULL)
     {
+        clear();
         return;
     }
 
@@ -164,6 +151,8 @@ void HexWindow::SetTableName(const QString &name, const QString &tableName, cons
     {
         return;
     }
+
+    if(m_pCurSQLite3DB == NULL) return;
     m_tableHeaders.clear();
     m_curTableName = tableName;
     m_curName = name;
@@ -203,6 +192,7 @@ QString upperHex(const string& raw, int start, int len)
 
 void HexWindow::setPageHdrData(PageType type, ContentArea& pageHeaderArea, ContentArea& cellidxArea, ContentArea& unusedArea, int pgno, string raw)
 {
+    if(m_pCurSQLite3DB == NULL) return;
     int base = 10;
     QStandardItem* pghdr = new QStandardItem("PageHdr");
     m_pPageViewModel->appendRow(pghdr);
@@ -517,6 +507,7 @@ QStandardItem *HexWindow::GetItem(int start, i64 len, QString txt)
 
 void HexWindow::onPageIdSelect(int pgno, PageType type)
 {
+    if(m_pCurSQLite3DB == NULL) return;
     bool decode = (
         type == PAGE_TYPE_INDEX_INTERIOR ||type == PAGE_TYPE_TABLE_INTERIOR ||
         type == PAGE_TYPE_INDEX_LEAF || type == PAGE_TYPE_TABLE_LEAF);
@@ -1008,7 +999,7 @@ void HexWindow::onCurrentAddressChanged(qint64 address)
 void HexWindow::onCheckBoxStatChanged(bool stat)
 {
     QHexDocument* document = m_pHexEdit->document();
-    if(document == NULL) return;
+    if(document == NULL || m_pCurSQLite3DB == NULL) return;
     if(stat)
     {
         document->setBaseAddress((m_curPageNo-1)*m_pCurSQLite3DB->GetPageSize());

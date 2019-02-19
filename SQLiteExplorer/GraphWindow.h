@@ -16,6 +16,8 @@ public:
     explicit GraphWindow(QWidget *parent = 0);
     ~GraphWindow();
 
+    void clear();
+
     void SetPath(QString path);
 private:
     Ui::GraphWindow *ui;

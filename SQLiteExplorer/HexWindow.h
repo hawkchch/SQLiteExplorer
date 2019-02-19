@@ -27,7 +27,8 @@ public:
     explicit HexWindow(QWidget *parent = 0);
     ~HexWindow();
 
-    void SetPageNos(const vector<int>& pgnos);
+    void clear();
+
     void SetPageNosAndType(const vector<pair<int, PageType>>& pgs);
     void SetTableName(const QString& name, const QString& tableName, const QString& type);
 

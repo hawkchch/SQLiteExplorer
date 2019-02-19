@@ -16,6 +16,8 @@ public:
     explicit DataWindow(QWidget *parent = 0);
     ~DataWindow();
 
+    void clear();
+
 public slots:
     void onSQLiteQueryReceived(const QString& sql);
     void onDataLoaded(const QString& msg);
