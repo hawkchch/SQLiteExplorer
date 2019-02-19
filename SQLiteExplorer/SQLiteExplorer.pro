@@ -38,7 +38,8 @@ SOURCES += \
     GraphWindow.cpp \
     SQLWindow.cpp \
     DialogAbout.cpp \
-    HexWindow.cpp
+    HexWindow.cpp \
+    highlighter.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -51,7 +52,8 @@ HEADERS += \
     GraphWindow.h \
     SQLWindow.h \
     DialogAbout.h \
-    HexWindow.h
+    HexWindow.h \
+    highlighter.h
 
 CONFIG += c++11
 

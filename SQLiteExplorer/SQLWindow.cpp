@@ -2,11 +2,13 @@
 #include "ui_sqlwindow.h"
 #include "mainwindow.h"
 #include "qsqlitetableview.h"
+#include "highlighter.h"
 
 #include <QLayout>
 #include <QVBoxLayout>
 
 #include <QTextEdit>
+#include <QDebug>
 
 QSQLiteQueryWindow::QSQLiteQueryWindow(QWidget *parent) :
     QWidget(parent),
@@ -15,6 +17,7 @@ QSQLiteQueryWindow::QSQLiteQueryWindow(QWidget *parent) :
     ui->setupUi(this);
 
     m_pParent = qobject_cast<MainWindow*>(parent);
+    m_pHighLighter = new Highlighter();
 
     m_pTableView = new QSQLiteTableView(parent);
     connect(this, SIGNAL(signalSQLiteQuery(QString)), m_pTableView, SLOT(onSQLiteQueryReceived(QString)));
@@ -39,6 +42,15 @@ QSQLiteQueryWindow::QSQLiteQueryWindow(QWidget *parent) :
     ui->centralWidget->layout()->setMargin(0);
     ui->centralWidget->layout()->setSpacing(0);
     ui->centralWidget->layout()->addWidget(m_pSplitter);
+
+    m_pHighLighter->setDocument(ui->textEdit->document());
+
+    QFont font;
+    font.setFamily("Courier");
+    font.setFixedPitch(true);
+    font.setPointSize(11);
+
+    ui->textEdit->setFont(font);
 }
 
 QSQLiteQueryWindow::~QSQLiteQueryWindow()
@@ -81,3 +93,4 @@ void QSQLiteQueryWindow::onDataLoaded(const QString &msg)
 {
     ui->label->setText(msg);
 }
+

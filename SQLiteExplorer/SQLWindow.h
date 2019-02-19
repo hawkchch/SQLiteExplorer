@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QSplitter>
+#include "highlighter.h"
 
 namespace Ui {
 class QSQLiteQueryWindow;
@@ -35,6 +36,7 @@ private:
     QSplitter* m_pSplitter;
 
     MainWindow* m_pParent;
+    Highlighter* m_pHighLighter;
 };
 
 #endif // QSQLITEQUERYWINDOW_H
