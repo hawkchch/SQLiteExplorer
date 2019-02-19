@@ -18,7 +18,8 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    m_pCurSQLite3DB(NULL)
 {
     ui->setupUi(this);
 
