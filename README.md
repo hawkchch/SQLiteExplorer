@@ -2,6 +2,8 @@
 该项目旨在创建一个查看SQLite文件结构的工具软件(SQLite3 File Format Tools)，用以方便对SQLite文件格式的学习。
 这里有需要的链接：
 
+该工程使用Qt5 MingW版编译的。
+
 SQLite3 File Format:
 https://sqlite.org/fileformat.html
 
