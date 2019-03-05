@@ -445,7 +445,51 @@ QStandardItem* HexWindow::setCellData(QStandardItem* parentItem, CSQLite3Payload
     {
         SQLite3Variant& var = payload.m_datas[i];
         cell->setChild(row, col++, GetItem(var.tStartAddr + offset, var.tLen>payload.m_nLocal?payload.m_nLocal:var.tLen, QString("TypaAndLen[%1]").arg(i)));
-        cell->setChild(row, col++, new QStandardItem(QString::number(var.tVal, base)));
+        QString strDesc;
+        switch(var.tVal)
+        {
+        case 0:
+            strDesc = "NULL";
+            break;
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            strDesc = QString("Integer: %1-Bytes").arg(var.tVal);
+            break;
+        case 5:
+            strDesc = QString("Integer: 6-Bytes");
+            break;
+        case 6:
+            strDesc = QString("Integer: 8-Bytes");
+            break;
+        case 7:
+            strDesc = QString("Double: 8-Bytes");
+            break;
+        case 8:
+            strDesc = QString("Integer: 0");
+            break;
+        case 9:
+            strDesc = QString("Integer: 1");
+            break;
+        case 10:
+        case 11:
+            strDesc = QString("Internal Use");
+            break;
+
+        default:
+            if(var.tVal %2 == 0)
+            {
+                strDesc = QString("Blob: %1-Bytes").arg((var.tVal-12)/2);
+            }
+            else
+            {
+                strDesc = QString("Text: %1-Bytes").arg((var.tVal-13)/2);
+            }
+            break;
+        }
+
+        cell->setChild(row, col++, new QStandardItem(strDesc));
         cell->setChild(row, col++, new QStandardItem(QString::number(var.tStartAddr + offset, base)));
         cell->setChild(row, col++, new QStandardItem(QString::number(var.tLen, base)));
         cell->setChild(row, col++, new QStandardItem(upperHex(payload.m_cellContent, var.tStartAddr, var.tLen)));
