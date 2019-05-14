@@ -115,6 +115,7 @@ void HexWindow::SetPageNosAndType(const vector<pair<int, PageType> > &pgs)
         return;
     }
 
+    ui->comboBox->blockSignals(true);
     ui->comboBox->clear();
     ui->comboBoxPageType->clear();
     m_pageNoAndTypes.clear();
@@ -138,6 +139,7 @@ void HexWindow::SetPageNosAndType(const vector<pair<int, PageType> > &pgs)
     {
         pts.push_back(m_pageTypeName[*it]);
     }
+    ui->comboBox->blockSignals(false);
     ui->comboBoxPageType->addItems(pts);
 }
 
